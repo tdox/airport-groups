@@ -5,7 +5,7 @@ module Parser where
 import AirportGroups
 
 -- parsec
-import Text.Parsec (Parsec, (<|>), letter, many1, parseTest, string)
+import Text.Parsec (Parsec, (<|>), letter, many1, parseTest, string, try)
 
 -- text
 import Data.Text (Text, pack)
@@ -30,11 +30,23 @@ iataIdentifier = do
 
 
 airportCodeIdentifier :: Parsec Text st AirportCode
-airportCodeIdentifier = undefined -- faaIdentifier <|> icaoIdentifier <|> iataIdentifier
+airportCodeIdentifier =  try (do
+    faa <- faaIdentifier
+    return $ FAAac faa)
+  <|> try (do
+    icao <- icaoIdentifier
+    return $ ICAOac icao)
+  <|> (do
+    iata <- iataIdentifier
+    return $ IATAac iata)
 
+  
 
 test1 :: IO ()
 test1 = do
   parseTest faaIdentifier "FAA:SFO"
   parseTest icaoIdentifier "ICAO:KSFO"
+  parseTest airportCodeIdentifier "FAA:SFO"
+  parseTest airportCodeIdentifier "ICAO:KSFO"
+  parseTest airportCodeIdentifier "IATA:YSFO"
 
