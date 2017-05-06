@@ -149,6 +149,8 @@ data Store a = Store { setVars  :: SetVars a
                      } deriving Show
 -}
 
+data AssignSetStmt a = AssignSetStmt Var (SetExpr a)
+
 data Stmt a = AssignSet Var (SetExpr a)
 --          | AssignBool BoolVar BoolExpr
             | AssignPred Var (PredExpr a)

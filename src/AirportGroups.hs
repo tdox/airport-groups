@@ -30,21 +30,21 @@ data IATA = IATA Text deriving (Eq, Ord, Show)
 data FAA  = FAA  Text deriving (Eq, Ord, Show)
 
 data CountryAirportCode = CAC CountryCode Text
-                           deriving (Eq, Show)
+                           deriving (Eq, Ord, Show)
 
 
 data AirportCode = ICAOac ICAO
                  | IATAac IATA
                  | FAAac  FAA
                  | CACac CountryAirportCode
-                 deriving (Eq, Show)
+                 deriving (Eq, Ord, Show)
 
 
 data AirportCodes = AirportCodes { acFAA  :: Maybe FAA
                                  , acICAO :: Maybe ICAO
                                  , acIATA :: Maybe IATA
                                  , acCAC  :: Maybe CountryAirportCode
-                                 } deriving (Eq, Show)
+                                 } deriving (Eq, Ord, Show)
 
 -- data AirportCountryCode = AirportCountryCode CountryCode AirporCode
 
@@ -69,20 +69,25 @@ data Airport = Airport { apId          :: ID Airport
 
 <program> ::=  <stmt> ";"  | <stmt> ";" <program>
 
-<stmt> ::= <set-var> "=" <set-expr>
-         | <pred-var> "=" <pred-expr>
-         | "print" <set-expr>
+<stmt> ::= <set-assign-stmt>
+         | <pred-assign-stmt>
+         | <print-stmt>
 
+<set-assign-stmt> ::= <set-var> "=" <set-expr>
+<pred-assign-stmt> ::= <pred-var> "=" <pred-expr>
+<print-stmt> ::= "print <set-expr>
 
 <set-var> ::= <alphanumeric>
 
 <set-expr> ::= <set-var>
              | "(" <set-expr> ")"
-             | "[" <airport-identifiers> "]"
+             | airport-identifier-list
              | <set-expr> <set-op> <set-expr>
              | <set-expr> "|" <pred-expr>
 
 <set-op> ::= "\/" | "/\"
+
+<airport-identifer-list> = "[" <airport-identifiers> "]"
 
 <airport-identifiers> ::= <airport-identifier>
                         | <airport-identifier> "," <airport-identifiers>
