@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE DeriveFunctor, GADTs, OverloadedStrings, ScopedTypeVariables #-}
 
 module Groups where
 
@@ -92,7 +92,7 @@ as3 := usAps suchThat isInCAorOr
 type Var = Text
 -- type BoolVar = Text
 
-data Pred a = Pred (a -> Bool)
+data Pred a = Pred (a -> Bool) -- deriving Functor
 
 instance Show (Pred a) where
   show (Pred _) = "pred"
@@ -128,6 +128,7 @@ data PredExpr a = PLit (Pred a)
                 | POr (PredExpr a) (PredExpr a)
                 | PNot (PredExpr a)
                 deriving Show
+                --deriving (Functor, Show)
 
 type Store a = Map Var (Val a)
 

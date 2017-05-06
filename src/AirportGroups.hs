@@ -56,7 +56,7 @@ data AirportCodes = AirportCodes { acFAA  :: Maybe FAA
 
 -- examples "ICAO:KSFO" "CAC:USA/SFO"
 
-data ID a = ID {iD :: Int} deriving (Eq, Show)
+data ID a = ID {iD :: Int} deriving (Eq, Ord, Show)
 
 type LatLonDeg = (Double, Double)
 
@@ -67,7 +67,7 @@ data Airport = Airport { apId          :: ID Airport
                        , apCountryCode :: CountryCode
                        , apUsStateCode :: Maybe (UsStateCode)
                        , apLatLon      :: LatLonDeg
-                       } deriving (Eq, Show)
+                       } deriving (Eq, Ord, Show)
 
 
 
@@ -79,6 +79,16 @@ data AirportMaps = AirportMaps { apIdMap   :: AirportIdMap
                                , apFaaMap  :: AirportFaaMap
                                , apIcaoMap :: AirportIcaoMap
                                }
+
+lookup :: AirportCode -> AirportMaps -> Maybe Airport
+lookup code airports =
+
+  case code of
+    ICAOac icao -> M.lookup icao $ apIcaoMap airports
+    FAAac  faa  -> M.lookup faa  $ apFaaMap airports
+    IATAac _    -> error "AirportGroups.lookup: not yet implemented"
+    CACac  _    -> error "AirportGroups.lookup: not yet implemented"
+
 
 
 mkFaaMap :: AirportIdMap -> AirportFaaMap

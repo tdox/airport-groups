@@ -6,24 +6,26 @@ module Parser where
 -- base
 import Control.Monad (void)
 import Data.Char (isSpace)
+import Data.Maybe (fromMaybe, maybe)
 
 -- containers
 import Data.Set (fromList)
 import qualified Data.IntMap as IM
 
 -- parsec
-import Text.Parsec (Parsec, ParseError, (<|>), char, letter, many1, parse, parseTest, string, try)
+import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getState, letter, many1, parse, parseTest, string, try, unexpected)
+
 import qualified Text.Parsec.Token as P -- (commaSep1, makeTokenParser)
 import Text.Parsec.Language (haskellDef)
 
 -- text
 import Data.Text (Text, pack)
 
-import AirportGroups
+import AirportGroups as AG
 import Groups
 
 --------------------------------------------------------------------------------
-note: change AirportCode to Airport
+-- note: change AirportCode to Airport
 
 lexer = P.makeTokenParser haskellDef
 
@@ -58,6 +60,18 @@ airportIdentifier =
     iata <- iataIdentifier
     return $ IATAac iata)
 
+airport :: Parsec String AirportMaps Airport
+airport = do
+  code <- airportIdentifier
+  maps <- getState
+  
+  let mAirport = AG.lookup code maps
+
+  case mAirport of
+    Nothing -> unexpected "known airport"
+    Just airport -> return airport
+    
+
 commaSep1 = P.commaSep1 lexer
 squares = P.squares lexer
 identifier = P.identifier lexer
@@ -69,19 +83,33 @@ airportIdentifiers = commaSep1 airportIdentifier
 airportIdentifierList :: Parsec String st [AirportCode]
 airportIdentifierList = squares airportIdentifiers
 
+airports' :: Parsec String AirportMaps [Airport]
+airports' = commaSep1 airport
+
+airports :: Parsec String AirportMaps [Airport]
+airports = squares airports'
+
+
 stripSpaces :: String -> String
 stripSpaces str = filter (not . isSpace) str
 
 setVar :: Parsec String st Var
 setVar = pack <$> identifier
 
-setExpr :: Parsec String st (SetExpr AirportCode)
-setExpr =
+
+setExprCode :: Parsec String st (SetExpr AirportCode)
+setExprCode =
   try (SVar <$> setVar)
   <|> try ((Elems . fromList) <$> airportIdentifierList)
 
+  
+setExpr :: Parsec String AirportMaps (SetExpr Airport)
+setExpr =
+  try (SVar <$> setVar)
+  <|> try ((Elems . fromList) <$> airports)
 
-setAssignStmt :: Parsec String st (Stmt AirportCode)
+
+setAssignStmt :: Parsec String AirportMaps (Stmt Airport)
 setAssignStmt = do
   var <- setVar
   void $ char '='
@@ -100,13 +128,13 @@ printStmt = do
   return $ Print var
   
 
-stmt :: Parsec String st (Stmt AirportCode)
+stmt :: Parsec String AirportMaps (Stmt Airport)
 stmt =
   try (setAssignStmt)
 
   
 
-prog :: Parsec String st (Program AirportCode)
+prog :: Parsec String AirportMaps (Program Airport)
 prog = semiSep1 stmt
 
     
@@ -122,11 +150,11 @@ test1 = do
   parseTest airportIdentifiers $ stripSpaces "ICAO:KSFO , FAA:LAX"
   parseTest airportIdentifierList $ stripSpaces "[  ICAO:KSFO , FAA:LAX  ]"
   parseTest setVar "s1_"
-  parseTest setExpr "s1_"
-  parseTest setExpr $ stripSpaces "[ ICAO : KSFO ]"
-  parseTest setExpr $ stripSpaces "[ ICAO : KSFO, FAA:LAX ]"
-  parseTest setAssignStmt $ stripSpaces "s1 = [ICAO:KSFO, FAA:LAX]"
-  parseTest prog $ stripSpaces "s1 = [ICAO:KSFO, FAA:LAX] ; s2 = [IATA:XYZ]"
+  parseTest setExprCode "s1_"
+  parseTest setExprCode $ stripSpaces "[ ICAO : KSFO ]"
+  parseTest setExprCode $ stripSpaces "[ ICAO : KSFO, FAA:LAX ]"
+  --parseTest setAssignStmt $ stripSpaces "s1 = [ICAO:KSFO, FAA:LAX]"
+  --parseTest prog $ stripSpaces "s1 = [ICAO:KSFO, FAA:LAX] ; s2 = [IATA:XYZ]"
 
 
 mkTestAirportIdMap :: AirportIdMap
@@ -152,6 +180,7 @@ mkTestAirportIdMap = foldr (\ap -> IM.insert (iD (apId ap)) ap) IM.empty as
 mkTestAirportMaps :: AirportMaps
 mkTestAirportMaps = mkAirportMaps mkTestAirportIdMap
 
+{-
 
 test2 :: IO ()
 test2 = do
@@ -159,17 +188,16 @@ test2 = do
     pStr1 = stripSpaces "s1 = [ICAO:KSFO, FAA:LAX] ; s2 = [IATA:XYZ]"
     aps = mkTestAirportMaps
 
-    ep1 :: Either ParseError (Program AirportCode)
+    ep1 :: Either ParseError (Program Airport)
     ep1 = parse prog "dummySrc" pStr1
 
   case ep1 of
     Left err -> print err
     Right p1 -> execProg aps p1
         
-    
-    
+   
   putStrLn "done"
-
+-}
 
 
 convertSetExpr :: AirportMaps -> SetExpr AirportCode -> SetExpr Airport
