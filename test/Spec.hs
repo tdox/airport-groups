@@ -3,14 +3,16 @@
 
 
 -- containers
+
 import Data.IntMap (IntMap)
 import qualified Data.IntMap as IM
 import Data.Map (Map)
 import qualified Data.Map as M
 
+
 import AirportGroups
 
-
+{-
 type AirportIdMap = IntMap Airport
 type AirportFaaMap = Map FAA Airport
 type AirportIcaoMap = Map ICAO Airport
@@ -37,7 +39,7 @@ mkIcaoMap idMap = foldr (\(_, ap) -> case acICAO (apCodes ap) of
 
 mkAirportMaps :: AirportIdMap -> AirportMaps
 mkAirportMaps idMap = AirportMaps idMap (mkFaaMap idMap) (mkIcaoMap idMap)
-
+-}
 
 main :: IO ()
 main = putStrLn "Test suite not yet implemented"

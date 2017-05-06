@@ -2,6 +2,12 @@
 
 module AirportGroups where
 
+-- containers
+import Data.IntMap (IntMap)
+import qualified Data.IntMap as IM
+import Data.Map (Map)
+import qualified Data.Map as M
+
 -- text
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -56,15 +62,44 @@ type LatLonDeg = (Double, Double)
 
 
 
---data Airport = Airport AirportCodes deriving (Eq, Show)
 data Airport = Airport { apId          :: ID Airport
                        , apCodes       :: AirportCodes
                        , apCountryCode :: CountryCode
                        , apUsStateCode :: Maybe (UsStateCode)
                        , apLatLon      :: LatLonDeg
                        } deriving (Eq, Show)
-  
 
+
+
+type AirportIdMap = IntMap Airport
+type AirportFaaMap = Map FAA Airport
+type AirportIcaoMap = Map ICAO Airport
+
+data AirportMaps = AirportMaps { apIdMap   :: AirportIdMap
+                               , apFaaMap  :: AirportFaaMap
+                               , apIcaoMap :: AirportIcaoMap
+                               }
+
+
+mkFaaMap :: AirportIdMap -> AirportFaaMap
+mkFaaMap idMap = foldr (\(_, ap) -> case acFAA (apCodes ap) of
+                               Nothing -> id
+                               Just faa -> M.insert faa ap)
+                        M.empty
+                        (IM.toList idMap)
+
+mkIcaoMap :: AirportIdMap -> AirportIcaoMap
+mkIcaoMap idMap = foldr (\(_, ap) -> case acICAO (apCodes ap) of
+                               Nothing -> id
+                               Just icao -> M.insert icao ap)
+                        M.empty
+                        (IM.toList idMap)
+
+mkAirportMaps :: AirportIdMap -> AirportMaps
+mkAirportMaps idMap = AirportMaps idMap (mkFaaMap idMap) (mkIcaoMap idMap)
+
+               
+--------------------------------------------------------------------------------
 {-
 
 <program> ::=  <stmt> ";"  | <stmt> ";" <program>
@@ -72,20 +107,27 @@ data Airport = Airport { apId          :: ID Airport
 <stmt> ::= <set-assign-stmt>
          | <pred-assign-stmt>
          | <print-stmt>
+         | <elem-of-stmt>
 
 <set-assign-stmt> ::= <set-var> "=" <set-expr>
 <pred-assign-stmt> ::= <pred-var> "=" <pred-expr>
-<print-stmt> ::= "print <set-expr>
+<print-stmt> ::= "print(" <set-var> ")"
+<elem-of-stmt> ::= "elem(" <airport-identifier> "," <set-expr> ")"
 
 <set-var> ::= <alphanumeric>
 
 <set-expr> ::= <set-var>
              | "(" <set-expr> ")"
-             | airport-identifier-list
-             | <set-expr> <set-op> <set-expr>
-             | <set-expr> "|" <pred-expr>
+             | <airport-identifier-list>
+             | <set-op-expr>
+             | <set-such-that-expr>
 
-<set-op> ::= "\/" | "/\"
+<set-op-expr> ::= <set-expr> <set-op> <set-expr>
+<set-such-that-expr> ::=  <set-expr> "|" <pred-expr>
+
+<set-op> ::= <union> | <intersection>
+<union> ::= "\/" | ":U:"
+<intersection> ::= "/\" | ":I:"
 
 <airport-identifer-list> = "[" <airport-identifiers> "]"
 
@@ -113,7 +155,9 @@ data Airport = Airport { apId          :: ID Airport
               | "isSouthOfLatitudeDegs(" <float> ")"
               | "isBetweenLongitudesDegs(" <float> "," <float> ")"
 
-pred-op ::= "&&" | "||"
+<pred-op> ::= <and> | <or>
+<and> ::= "&&"
+<or> ::= "||"
 
 <state-code" ::= <character><character>
 <country-code" ::= <characters>

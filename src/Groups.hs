@@ -155,6 +155,7 @@ data Stmt a = AssignSet Var (SetExpr a)
 --          | AssignBool BoolVar BoolExpr
             | AssignPred Var (PredExpr a)
             | Print Var
+            | ElemOf a (SetExpr a)
            -- | PrintPred PredVar
             -- | Seq [Stmt a]
             deriving Show
@@ -213,31 +214,31 @@ evalBoolExp (Not x) = not $ evalBoolExpr x
 -}
 
 
-evalIsMemberOf :: Ord a => Store a -> a -> SetExpr a -> Either Err Bool
+evalIsElementOf :: Ord a => Store a -> a -> SetExpr a -> Either Err Bool
 
-evalIsMemberOf _ e (Elems xs) = Right $ S.member e xs
+evalIsElementOf _ e (Elems xs) = Right $ S.member e xs
 
-evalIsMemberOf st e (Union xs ys) =
+evalIsElementOf st e (Union xs ys) =
   (||) <$> (S.member e <$> (evalSetExpr st xs))
        <*> (S.member e <$> (evalSetExpr st ys))
 
-evalIsMemberOf st e (Intersection xs ys) =
+evalIsElementOf st e (Intersection xs ys) =
   (&&) <$> (S.member e <$> (evalSetExpr st xs))
        <*> (S.member e <$> (evalSetExpr st ys))
 
 
 
-evalIsMemberOf st e (Difference xs ys) =
+evalIsElementOf st e (Difference xs ys) =
   (&&) <$> (S.member e <$> (evalSetExpr st xs))
        <*> (not <$> (S.member e <$> (evalSetExpr st ys)))
 
   
 --  S.member e (evalSetExpr st xs) && not (S.member e (evalSetExpr st ys))
 
--- evalIsMemberOf e s@(SuchThat _ _) = S.member e $ evalSetExpr s
+-- evalIsElementOf e s@(SuchThat _ _) = S.member e $ evalSetExpr s
 -- uses following default
 
-evalIsMemberOf st e s = S.member e <$> evalSetExpr st s
+evalIsElementOf st e s = S.member e <$> evalSetExpr st s
 
 evalPred :: (Pred a) -> a -> Bool
 evalPred (Pred f) e = f e 
@@ -280,6 +281,20 @@ execStmt (Print var) (out0, st) = rslt
     rslt = case mVal of
       Nothing -> Left (var <> " undefined")
       Just val -> Right $ ((var <> " = " <> pack (show val)) : out0, st)
+
+
+execStmt (ElemOf x setExpr) (out, st) = eOutStore
+  where
+    eBool :: Either Err Bool
+    eBool = evalIsElementOf st x setExpr
+
+    eOutStore :: Either Err (Output, Store a)
+    eOutStore = case eBool of
+      Left err -> Left err
+      Right b -> Right (pack (show b) : out, st)
+
+
+
 
 execProgram [] outSt = Right outSt
 
@@ -326,40 +341,40 @@ p1 = Pred (>= 3)
 s4 = SuchThat s2 (PLit p1)
 ok4 = evalSetExpr st s4 == Right (fromList [3, 4])
 
-Right b1 = evalIsMemberOf st 2 s1
+Right b1 = evalIsElementOf st 2 s1
 ok5 = b1
 
-Right b2 = evalIsMemberOf st 9 s1
+Right b2 = evalIsElementOf st 9 s1
 ok6 = not b2
 
-Right b3 = evalIsMemberOf st 1 (Union s1 s2)
+Right b3 = evalIsElementOf st 1 (Union s1 s2)
 ok7 = b3
 
-Right b4 = evalIsMemberOf st 9 (Union s1 s2)
+Right b4 = evalIsElementOf st 9 (Union s1 s2)
 ok8 = not b4
 
-Right b5 = evalIsMemberOf st 2 (Intersection s1 s2)
+Right b5 = evalIsElementOf st 2 (Intersection s1 s2)
 ok9 = b5
 
-Right b6 = evalIsMemberOf st 1 (Intersection s1 s2)
+Right b6 = evalIsElementOf st 1 (Intersection s1 s2)
 ok10 = not b6
 
-Right b7 = evalIsMemberOf st 1 (Difference s1 s2)
+Right b7 = evalIsElementOf st 1 (Difference s1 s2)
 ok11 = b7
 
-Right b8 = evalIsMemberOf st 2 (Difference s1 s2)
+Right b8 = evalIsElementOf st 2 (Difference s1 s2)
 ok12 = not b8
 
-Right b9 = evalIsMemberOf st 10 (Difference s1 s2)
+Right b9 = evalIsElementOf st 10 (Difference s1 s2)
 ok13 = not b9
 
-Right b10 = evalIsMemberOf st 1 $ SuchThat s1 $ PLit $ Pred (> 2)
+Right b10 = evalIsElementOf st 1 $ SuchThat s1 $ PLit $ Pred (> 2)
 ok14 = not b10
 
-Right b11 = evalIsMemberOf st 3 $ SuchThat s1 $ PLit $ Pred (> 2)
+Right b11 = evalIsElementOf st 3 $ SuchThat s1 $ PLit $ Pred (> 2)
 ok15 = b11
 
-Right b12 = evalIsMemberOf st 9 $ SuchThat s1 $ PLit $ Pred (> 2)
+Right b12 = evalIsElementOf st 9 $ SuchThat s1 $ PLit $ Pred (> 2)
 ok16 = not b12
 
 b13 = evalPred p1 0
