@@ -136,8 +136,8 @@ mkAirportMaps idMap = AirportMaps idMap (mkFaaMap idMap) (mkIcaoMap idMap)
 <set-such-that-expr> ::=  <set-expr> "|" <pred-expr>
 
 <set-op> ::= <union> | <intersection>
-<union> ::= "\/" | ":U:"
-<intersection> ::= "/\" | ":I:"
+<union> ::= "\/" | ":U:" | "+"
+<intersection> ::= "/\" | ":I:" | "^"
 
 <airport-identifer-list> = "[" <airport-identifiers> "]"
 
@@ -160,7 +160,7 @@ mkAirportMaps idMap = AirportMaps idMap (mkFaaMap idMap) (mkIcaoMap idMap)
               | "isInState(" <state-code> ")"
               | "isInCountry(" <country-code> ")"
               | "isNearInMiles(" <airport-identifier> "," <float> ")"
-              | "isNortOfLatitudeDegs(" <float> ")"
+              | "isNorthOfLatitudeDegs(" <float> ")"
               | "isSouthOfLatitudeDegs(" <float> ")"
               | "isSouthOfLatitudeDegs(" <float> ")"
               | "isBetweenLongitudesDegs(" <float> "," <float> ")"

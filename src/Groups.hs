@@ -258,9 +258,9 @@ evalPredExpr (PNot p) =
 
 
 execStmt :: forall a. (Show a, Ord a) =>
-        Stmt a -> (Output, Store a) -> Either Err (Output, Store a)
+        (Output, Store a) -> Stmt a -> Either Err (Output, Store a)
 
-execStmt (AssignSet var setExpr) (out, st) = eOutStore
+execStmt (out, st) (AssignSet var setExpr) = eOutStore
 
   where
     eSet :: Either Err (Set a)
@@ -272,10 +272,10 @@ execStmt (AssignSet var setExpr) (out, st) = eOutStore
       Right set -> Right (out, M.insert var (SetVal set) st)
 
 
-execStmt (AssignPred var predExpr) (out, st) =
+execStmt  (out, st) (AssignPred var predExpr) =
   Right $ (out, M.insert var (PredVal (evalPredExpr predExpr)) st)
 
-execStmt (Print var) (out0, st) = rslt
+execStmt  (out0, st) (Print var) = rslt
   where
     mVal = M.lookup var st
 
@@ -284,7 +284,7 @@ execStmt (Print var) (out0, st) = rslt
       Just val -> Right $ ((var <> " = " <> pack (show val)) : out0, st)
 
 
-execStmt (ElemOf x setExpr) (out, st) = eOutStore
+execStmt  (out, st) (ElemOf x setExpr) = eOutStore
   where
     eBool :: Either Err Bool
     eBool = evalIsElementOf st x setExpr
@@ -297,15 +297,16 @@ execStmt (ElemOf x setExpr) (out, st) = eOutStore
 
 
 
-execProgram [] outSt = Right outSt
 
-execProgram (s:ss) os0@(out0, st0) = x
-  where
-    eOutStore = execStmt s os0
+execProgram outSt [] = Right outSt
 
-    x = case eOutStore of
+execProgram  os0@(out0, st0) (s:ss) =
+  case eOutStore of
       Left err -> Left err
-      Right os1 -> execProgram ss os1
+      Right os1 -> execProgram os1 ss
+      
+  where
+    eOutStore = execStmt  os0 s
 
 
 
@@ -427,29 +428,29 @@ out0 = []
 
   
 stmt1 = AssignSet "s3" s3
-Right os1 = execStmt stmt1 (out0, st0) :: Either Err (Output, Store Int)
+Right os1 = execStmt  (out0, st0) stmt1 :: Either Err (Output, Store Int)
 
 
 stmt2 = Print "s3"
-Right os2 = execStmt stmt2 os1
+Right os2 = execStmt  os1 stmt2
 ok28 = fst os2 == ["s3 = [1,2,3,4]"]
 
 stmt3 = Print "s999"
-Left os3 = execStmt stmt3 os2
+Left os3 = execStmt  os2 stmt3
 ok29 = os3 == "s999 undefined"
 
 stmt4 = AssignSet "s4" s4
-Right os4 = execStmt stmt4 os2
+Right os4 = execStmt  os2 stmt4
 stmt4a = Print "s4"
-Right os4a = execStmt stmt4a os4
+Right os4a = execStmt  os4 stmt4a
 ok30 = fst os4a == ["s4 = [3,4]","s3 = [1,2,3,4]"]
 
 
 stmt5 = AssignPred "p1" (PAnd (PLit p1) (PLit p2))
-Right os5 = execStmt stmt5 os4a
+Right os5 = execStmt  os4a stmt5
 
 prog1 = [stmt1, stmt2, stmt4, stmt4a, stmt5]
-Right os6 = execProgram prog1 (out0, st0)
+Right os6 = execProgram (out0, st0) prog1
 ok31 = fst os6 == fst os4a
 
 

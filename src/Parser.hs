@@ -4,22 +4,24 @@ module Parser where
 
 
 -- base
-import Control.Monad (void)
+import Control.Monad (foldM, forM_, void)
 import Data.Char (isSpace)
 import Data.Maybe (fromMaybe, maybe)
+import Debug.Trace
 
 -- containers
 import Data.Set (fromList)
 import qualified Data.IntMap as IM
+import qualified Data.Map as M
 
 -- parsec
-import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getState, letter, many1, parse, parseTest, string, try, unexpected)
+import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getState, letter, many1, parse, parseTest, runParser, string, try, unexpected)
 
 import qualified Text.Parsec.Token as P -- (commaSep1, makeTokenParser)
 import Text.Parsec.Language (haskellDef)
 
 -- text
-import Data.Text (Text, pack)
+import Data.Text (Text, pack, unpack)
 
 import AirportGroups as AG
 import Groups
@@ -118,11 +120,9 @@ setAssignStmt = do
 
 -- predAssignStmt ::
 
-printStmt :: Parsec String st (Stmt AirportCode)
+printStmt :: Parsec String st (Stmt Airport)
 printStmt = do
   void $ string "print("
-  --api <- airportIdentifier
-  --void $ char ','
   var <- setVar
   void $ char ')'
   return $ Print var
@@ -131,12 +131,50 @@ printStmt = do
 stmt :: Parsec String AirportMaps (Stmt Airport)
 stmt =
   try (setAssignStmt)
+  <|> try (printStmt)
 
   
 
 prog :: Parsec String AirportMaps (Program Airport)
 prog = semiSep1 stmt
 
+--------------------------------------------------------------------------------
+
+loadAirports :: FilePath -> IO AirportMaps
+loadAirports fp = do
+  lns <- lines <$> readFile fp
+  let idMap = foldr insertAirport IM.empty $ tail lns
+  return $ mkAirportMaps idMap
+
+  
+  
+  
+insertAirport :: String -> AirportIdMap -> AirportIdMap
+insertAirport ln map0 = IM.insert iD ap map0
+  where
+    [iDStr, faaCode, icaoCode, iataCode, latDegsStr, lonDegsStr] = words ln
+    iD = read iDStr
+    -- iD = read $ {- traceShow iDStr -} iDStr
+    latDegs = read latDegsStr
+    lonDegs = read lonDegsStr
+    mFaa  = fromNullStr faaCode
+    mIcao = fromNullStr icaoCode
+    mIata = fromNullStr iataCode
+    
+    codes = AirportCodes (FAA  <$> fromNullStr faaCode)
+                         (ICAO <$> fromNullStr icaoCode)
+                         (IATA <$> fromNullStr iataCode)
+                         Nothing
+
+    ap = Airport (ID iD) codes "USA" (Just (readUsStateCode "CA"))
+                 (latDegs, lonDegs)
+
+
+
+fromNullStr :: String -> Maybe Text
+fromNullStr str0 = case str0 of
+  "NULL" -> Nothing
+  str -> Just $ pack str
     
 --------------------------------------------------------------------------------
 
@@ -156,6 +194,13 @@ test1 = do
   --parseTest setAssignStmt $ stripSpaces "s1 = [ICAO:KSFO, FAA:LAX]"
   --parseTest prog $ stripSpaces "s1 = [ICAO:KSFO, FAA:LAX] ; s2 = [IATA:XYZ]"
 
+testLoadAirports :: IO ()
+testLoadAirports = do
+  let fp = "../misc/airports_dev.txt"
+  maps <- loadAirports fp
+  let faas = apFaaMap maps
+  forM_ (take 10 (M.toList faas)) print
+  
 
 mkTestAirportIdMap :: AirportIdMap
 mkTestAirportIdMap = foldr (\ap -> IM.insert (iD (apId ap)) ap) IM.empty as
@@ -180,41 +225,57 @@ mkTestAirportIdMap = foldr (\ap -> IM.insert (iD (apId ap)) ap) IM.empty as
 mkTestAirportMaps :: AirportMaps
 mkTestAirportMaps = mkAirportMaps mkTestAirportIdMap
 
-{-
+
+
+
 
 test2 :: IO ()
 test2 = do
   let
-    pStr1 = stripSpaces "s1 = [ICAO:KSFO, FAA:LAX] ; s2 = [IATA:XYZ]"
-    aps = mkTestAirportMaps
+    pStr1 = stripSpaces "s1 = [ICAO:KSFO]; print(s1)" --  ; s2 = [ICAO:KMDW]"
+    fp = "../misc/airports_dev.txt"
+    
+  aps <- loadAirports fp
 
+  let
     ep1 :: Either ParseError (Program Airport)
-    ep1 = parse prog "dummySrc" pStr1
+    ep1 = runParser prog aps "dummySrc" pStr1
 
-  case ep1 of
-    Left err -> print err
-    Right p1 -> execProg aps p1
+--  print ep1
+
+  let
+    output :: [Text]
+    output = case ep1 of
+      Left err -> [pack $ show err]
+      Right p1 -> case execProgram ([], M.empty) p1 of
+        Left err -> [err]
+        Right (out, _) -> out
+
+  putStrLn $ "output:"
+
+  forM_ output (putStrLn . unpack)
+      
         
    
   putStrLn "done"
+
+
+
+{-
+execProg :: Program Airport -> Either Err (Output, Store Airport)
+execProg p = foldM execStmt ("", M.empty) p
 -}
 
+{-
+execSt :: AirportMaps -> (Output, Store Airport) -> Stmt Airport
+       -> Either Err (Output, Store Airport)
+       
+execSt aps (out0, st0) stmt =  execStmt stmt (out0, st0)
+-}
+ 
 
+
+--------------------------------------------------------------------------------
 convertSetExpr :: AirportMaps -> SetExpr AirportCode -> SetExpr Airport
 convertSetExpr aps setExprAC = undefined
 
-execProg :: AirportMaps -> Program AirportCode -> IO ()
-execProg aps p = undefined
-
-
-execSt :: AirportMaps -> (Output, Store Airport) -> Stmt AirportCode -> Either Err (Output, Store Airport)
-execSt aps (out0, st0) stmt = undefined
-{-
-  where
-    eOutStore = execStmt stmt (out0, st0)
-
-    eos = case eOutStr of
-      Left err -> Left err
-      Right 
-  
--}
