@@ -29,7 +29,139 @@ import Groups
 --------------------------------------------------------------------------------
 -- note: change AirportCode to Airport
 
-lexer = P.makeTokenParser haskellDef
+prog :: Parsec String AirportMaps (Program Airport)
+prog = semiSep1 stmt
+
+stmt :: Parsec String AirportMaps (Stmt Airport)
+stmt =
+  try setAssignStmt
+  <|> try predAssignStmt
+  <|> try printStmt
+  <|> try elemOfStmt
+
+
+setAssignStmt :: Parsec String AirportMaps (Stmt Airport)
+setAssignStmt = do
+  var <- setVar
+  void $ char '='
+  expr <- setExpr
+  return $ AssignSet var expr
+
+
+predAssignStmt :: Parsec String AirportMaps (Stmt Airport)
+predAssignStmt = undefined
+
+
+printStmt :: Parsec String st (Stmt Airport)
+printStmt = do
+  void $ string "print("
+  var <- setVar
+  void $ char ')'
+  return $ Print var
+  
+elemOfStmt :: Parsec String st (Stmt Airport)
+elemOfStmt = undefined
+
+setVar :: Parsec String st Var
+setVar = pack <$> identifier
+
+setExpr :: Parsec String AirportMaps (SetExpr Airport)
+setExpr =
+  try (SVar <$> setVar)
+  <|> try setParensExpr
+  <|> try ((Elems . fromList) <$> airports)
+  <|> try setUnionExpr
+  <|> try setIntersectionExpr
+  <|> try setDifferenceExpr
+  <|> try setSuchThatExpr
+
+setExprCode :: Parsec String st (SetExpr AirportCode)
+setExprCode =
+  try (SVar <$> setVar)
+  <|> try ((Elems . fromList) <$> airportIdentifierList)
+
+
+setParensExpr :: Parsec String AirportMaps (SetExpr Airport)
+setParensExpr = do
+  void $ char '('
+  s <- setExpr
+  void $ char ')'
+  return s
+
+setUnionExpr :: Parsec String AirportMaps (SetExpr Airport)
+setUnionExpr = do
+  s1 <- setExpr
+  union
+  s2 <- setExpr
+  return $ Union s1 s2
+
+union :: Parsec String AirportMaps ()
+union = void $ char '+'
+
+setIntersectionExpr :: Parsec String AirportMaps (SetExpr Airport)
+setIntersectionExpr = do
+  s1 <- setExpr
+  intersection
+  s2 <- setExpr
+  return $ Intersection s1 s2
+
+intersection :: Parsec String AirportMaps ()
+intersection = void $ char '^'
+
+setDifferenceExpr :: Parsec String AirportMaps (SetExpr Airport)
+setDifferenceExpr = do
+  s1 <- setExpr
+  difference
+  s2 <- setExpr
+  return $ Difference s1 s2
+
+difference :: Parsec String AirportMaps ()
+difference = void $ char '^'
+
+setSuchThatExpr :: Parsec String AirportMaps (SetExpr Airport)
+setSuchThatExpr = undefined
+
+
+suchThat :: Parsec String AirportMaps ()
+suchThat = void $ char '|'
+
+
+airportIdentifiers :: Parsec String st [AirportCode]
+airportIdentifiers = commaSep1 airportIdentifier
+
+airportIdentifierList :: Parsec String st [AirportCode]
+airportIdentifierList = squares airportIdentifiers
+
+airports' :: Parsec String AirportMaps [Airport]
+airports' = commaSep1 airport
+
+airports :: Parsec String AirportMaps [Airport]
+airports = squares airports'
+
+airport :: Parsec String AirportMaps Airport
+airport = do
+  code <- airportIdentifier
+  maps <- getState
+  
+  let mAirport = AG.lookup code maps
+
+  case mAirport of
+    Nothing -> unexpected "known airport"
+    Just airport -> return airport
+
+
+airportIdentifier :: Parsec String st AirportCode
+airportIdentifier =
+  try (do
+    faa <- faaIdentifier
+    return $ FAAac faa)
+  <|> try (do
+    icao <- icaoIdentifier
+    return $ ICAOac icao)
+  <|> (do
+    iata <- iataIdentifier
+    return $ IATAac iata)
+
 
 faaIdentifier :: Parsec String st FAA
 faaIdentifier = do
@@ -50,93 +182,56 @@ iataIdentifier = do
   return $ IATA $ pack code
 
 
-airportIdentifier :: Parsec String st AirportCode
-airportIdentifier =
-  try (do
-    faa <- faaIdentifier
-    return $ FAAac faa)
-  <|> try (do
-    icao <- icaoIdentifier
-    return $ ICAOac icao)
-  <|> (do
-    iata <- iataIdentifier
-    return $ IATAac iata)
+predExpr ::  Parsec String st (PredExpr Airport)
+predExpr =
+  try (PVar <$> predVar)
+  <|> try isInCountryPL
 
-airport :: Parsec String AirportMaps Airport
-airport = do
-  code <- airportIdentifier
-  maps <- getState
-  
-  let mAirport = AG.lookup code maps
 
-  case mAirport of
-    Nothing -> unexpected "known airport"
-    Just airport -> return airport
+predVar :: Parsec String st Var
+predVar = pack <$> identifier
+
+isInCountryOld :: Parsec String st (PredExpr Airport)
+isInCountryOld = do
+  void $ string "isInCountry"
+  void $ char '('
+  code <- many1 letter
+  void $ char ')'
+  return $ PLit $ Pred $ isInCountry $ pack code
+
+predLit :: String -> (Text -> Airport -> Bool)
+        -> Parsec String st (PredExpr Airport)
+predLit predFtnName predFtn = do
+  void $ string predFtnName
+  void $ char '('
+  code <- many1 letter
+  void $ char ')'
+  return $ PLit $ Pred $ predFtn $ pack code 
+
+isInCountryPL :: Parsec String st (PredExpr Airport)
+isInCountryPL  = predLit "isInCountry" isInCountry
     
-
+lexer = P.makeTokenParser haskellDef
 commaSep1 = P.commaSep1 lexer
 squares = P.squares lexer
 identifier = P.identifier lexer
 semiSep1 = P.semiSep1 lexer
 
-airportIdentifiers :: Parsec String st [AirportCode]
-airportIdentifiers = commaSep1 airportIdentifier
-
-airportIdentifierList :: Parsec String st [AirportCode]
-airportIdentifierList = squares airportIdentifiers
-
-airports' :: Parsec String AirportMaps [Airport]
-airports' = commaSep1 airport
-
-airports :: Parsec String AirportMaps [Airport]
-airports = squares airports'
 
 
 stripSpaces :: String -> String
 stripSpaces str = filter (not . isSpace) str
 
-setVar :: Parsec String st Var
-setVar = pack <$> identifier
-
-
-setExprCode :: Parsec String st (SetExpr AirportCode)
-setExprCode =
-  try (SVar <$> setVar)
-  <|> try ((Elems . fromList) <$> airportIdentifierList)
 
   
-setExpr :: Parsec String AirportMaps (SetExpr Airport)
-setExpr =
-  try (SVar <$> setVar)
-  <|> try ((Elems . fromList) <$> airports)
 
 
-setAssignStmt :: Parsec String AirportMaps (Stmt Airport)
-setAssignStmt = do
-  var <- setVar
-  void $ char '='
-  expr <- setExpr
-  return $ AssignSet var expr
 
 -- predAssignStmt ::
 
-printStmt :: Parsec String st (Stmt Airport)
-printStmt = do
-  void $ string "print("
-  var <- setVar
-  void $ char ')'
-  return $ Print var
-  
-
-stmt :: Parsec String AirportMaps (Stmt Airport)
-stmt =
-  try (setAssignStmt)
-  <|> try (printStmt)
 
   
 
-prog :: Parsec String AirportMaps (Program Airport)
-prog = semiSep1 stmt
 
 --------------------------------------------------------------------------------
 
@@ -152,7 +247,9 @@ loadAirports fp = do
 insertAirport :: String -> AirportIdMap -> AirportIdMap
 insertAirport ln map0 = IM.insert iD ap map0
   where
-    [iDStr, faaCode, icaoCode, iataCode, latDegsStr, lonDegsStr] = words ln
+    [iDStr, faaCode, icaoCode, iataCode, latDegsStr
+      , lonDegsStr, countryCode, stateCodeStr] = words ln
+      
     iD = read iDStr
     -- iD = read $ {- traceShow iDStr -} iDStr
     latDegs = read latDegsStr
@@ -166,7 +263,9 @@ insertAirport ln map0 = IM.insert iD ap map0
                          (IATA <$> fromNullStr iataCode)
                          Nothing
 
-    ap = Airport (ID iD) codes "USA" (Just (readUsStateCode "CA"))
+    mStateCode = readUsStateCode <$> fromNullStr stateCodeStr
+
+    ap = Airport (ID iD) codes (pack countryCode) mStateCode
                  (latDegs, lonDegs)
 
 
@@ -233,7 +332,7 @@ test2 :: IO ()
 test2 = do
   let
     pStr1 = stripSpaces "s1 = [ICAO:KSFO]; print(s1)" --  ; s2 = [ICAO:KMDW]"
-    fp = "../misc/airports_dev.txt"
+    fp = "./misc/airports_dev.txt"
     
   aps <- loadAirports fp
 

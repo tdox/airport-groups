@@ -127,6 +127,7 @@ data PredExpr a = PLit (Pred a)
                 | PAnd (PredExpr a) (PredExpr a)
                 | POr (PredExpr a) (PredExpr a)
                 | PNot (PredExpr a)
+
                 deriving Show
                 --deriving (Functor, Show)
 

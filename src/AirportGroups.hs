@@ -108,7 +108,11 @@ mkIcaoMap idMap = foldr (\(_, ap) -> case acICAO (apCodes ap) of
 mkAirportMaps :: AirportIdMap -> AirportMaps
 mkAirportMaps idMap = AirportMaps idMap (mkFaaMap idMap) (mkIcaoMap idMap)
 
-               
+
+isInCountry :: Text -> Airport -> Bool
+isInCountry countryCode ap = apCountryCode ap == countryCode
+
+start here  
 --------------------------------------------------------------------------------
 {-
 
@@ -127,15 +131,19 @@ mkAirportMaps idMap = AirportMaps idMap (mkFaaMap idMap) (mkIcaoMap idMap)
 <set-var> ::= <alphanumeric>
 
 <set-expr> ::= <set-var>
-             | "(" <set-expr> ")"
+             | <set-paren-expr>
              | <airport-identifier-list>
-             | <set-op-expr>
+             | <set-union-expr>
+             | <set-intersection-expr>
+             | <set-difference-expr>
              | <set-such-that-expr>
 
-<set-op-expr> ::= <set-expr> <set-op> <set-expr>
+<set-paren-expr> ::= "(" <set-expr> ")"
+<set-union-expr> ::= <set-expr> <union> <set-expr>
+<set-intersection-expr> ::= <set-expr> <intersection> <set-expr>
 <set-such-that-expr> ::=  <set-expr> "|" <pred-expr>
 
-<set-op> ::= <union> | <intersection>
+
 <union> ::= "\/" | ":U:" | "+"
 <intersection> ::= "/\" | ":I:" | "^"
 
