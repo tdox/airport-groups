@@ -1,0 +1,2 @@
+s1 = [ICAO:KSFO];
+print(s1)

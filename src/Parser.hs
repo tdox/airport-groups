@@ -15,7 +15,7 @@ import qualified Data.IntMap as IM
 import qualified Data.Map as M
 
 -- parsec
-import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getState, letter, many1, parse, parseTest, runParser, string, try, unexpected)
+import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getState, letter, many1, parse, parseTest, runParser, skipMany, space, string, try, unexpected)
 
 import qualified Text.Parsec.Token as P -- (commaSep1, makeTokenParser)
 import Text.Parsec.Language (haskellDef)
@@ -35,7 +35,7 @@ prog = semiSep1 stmt
 stmt :: Parsec String AirportMaps (Stmt Airport)
 stmt =
   try setAssignStmt
-  <|> try predAssignStmt
+--  <|> try predAssignStmt
   <|> try printStmt
   <|> try elemOfStmt
 
@@ -43,24 +43,28 @@ stmt =
 setAssignStmt :: Parsec String AirportMaps (Stmt Airport)
 setAssignStmt = do
   var <- setVar
+  spaces
   void $ char '='
+  spaces
   expr <- setExpr
   return $ AssignSet var expr
 
 
 predAssignStmt :: Parsec String AirportMaps (Stmt Airport)
-predAssignStmt = undefined
+predAssignStmt = error "predAssignStmt"
 
 
 printStmt :: Parsec String st (Stmt Airport)
 printStmt = do
   void $ string "print("
+  spaces
   var <- setVar
+  spaces
   void $ char ')'
   return $ Print var
   
 elemOfStmt :: Parsec String st (Stmt Airport)
-elemOfStmt = undefined
+elemOfStmt = error "elemOfStmt"
 
 setVar :: Parsec String st Var
 setVar = pack <$> identifier
@@ -84,14 +88,18 @@ setExprCode =
 setParensExpr :: Parsec String AirportMaps (SetExpr Airport)
 setParensExpr = do
   void $ char '('
+  spaces
   s <- setExpr
+  spaces
   void $ char ')'
   return s
 
 setUnionExpr :: Parsec String AirportMaps (SetExpr Airport)
 setUnionExpr = do
   s1 <- setExpr
+  spaces
   union
+  spaces
   s2 <- setExpr
   return $ Union s1 s2
 
@@ -101,7 +109,9 @@ union = void $ char '+'
 setIntersectionExpr :: Parsec String AirportMaps (SetExpr Airport)
 setIntersectionExpr = do
   s1 <- setExpr
+  spaces
   intersection
+  spaces
   s2 <- setExpr
   return $ Intersection s1 s2
 
@@ -111,15 +121,17 @@ intersection = void $ char '^'
 setDifferenceExpr :: Parsec String AirportMaps (SetExpr Airport)
 setDifferenceExpr = do
   s1 <- setExpr
+  spaces
   difference
+  spaces
   s2 <- setExpr
   return $ Difference s1 s2
 
 difference :: Parsec String AirportMaps ()
-difference = void $ char '^'
+difference = void $ char '-'
 
 setSuchThatExpr :: Parsec String AirportMaps (SetExpr Airport)
-setSuchThatExpr = undefined
+setSuchThatExpr = error "setSuchThatExpr"
 
 
 suchThat :: Parsec String AirportMaps ()
@@ -146,7 +158,7 @@ airport = do
   let mAirport = AG.lookup code maps
 
   case mAirport of
-    Nothing -> unexpected "known airport"
+    Nothing -> unexpected "unknown airport"
     Just airport -> return airport
 
 
@@ -195,7 +207,9 @@ isInCountryOld :: Parsec String st (PredExpr Airport)
 isInCountryOld = do
   void $ string "isInCountry"
   void $ char '('
+  spaces
   code <- many1 letter
+  spaces
   void $ char ')'
   return $ PLit $ Pred $ isInCountry $ pack code
 
@@ -204,23 +218,41 @@ predLit :: String -> (Text -> Airport -> Bool)
 predLit predFtnName predFtn = do
   void $ string predFtnName
   void $ char '('
+  spaces
   code <- many1 letter
+  spaces
   void $ char ')'
   return $ PLit $ Pred $ predFtn $ pack code 
 
 isInCountryPL :: Parsec String st (PredExpr Airport)
 isInCountryPL  = predLit "isInCountry" isInCountry
-    
+
+isInStatePL :: Parsec String st (PredExpr Airport)
+isInStatePL  = predLit "isInState" isInState
+
+isNorthOfPL :: Parsec String st (PredExpr Airport)
+isNorthOfPL = do
+  void $ string "isNorthOfLatitudeDegs("
+  spaces
+  lat <- float
+  spaces
+  void $ char ')'
+  return $ PLit $ Pred $ isNorthOf lat
+
+spaces :: Parsec String st ()
+spaces = skipMany space
+
 lexer = P.makeTokenParser haskellDef
 commaSep1 = P.commaSep1 lexer
 squares = P.squares lexer
 identifier = P.identifier lexer
 semiSep1 = P.semiSep1 lexer
+float = P.float lexer
 
 
 
-stripSpaces :: String -> String
-stripSpaces str = filter (not . isSpace) str
+--stripSpaces :: String -> String
+--stripSpaces str = filter (not . isSpace) str
 
 
   
@@ -266,7 +298,7 @@ insertAirport ln map0 = IM.insert iD ap map0
     mStateCode = readUsStateCode <$> fromNullStr stateCodeStr
 
     ap = Airport (ID iD) codes (pack countryCode) mStateCode
-                 (latDegs, lonDegs)
+                 (LatLonDeg latDegs lonDegs)
 
 
 
@@ -284,12 +316,12 @@ test1 = do
   parseTest airportIdentifier "FAA:SFO"
   parseTest airportIdentifier "ICAO:KSFO"
   parseTest airportIdentifier "IATA:YSFO"
-  parseTest airportIdentifiers $ stripSpaces "ICAO:KSFO , FAA:LAX"
-  parseTest airportIdentifierList $ stripSpaces "[  ICAO:KSFO , FAA:LAX  ]"
+  parseTest airportIdentifiers {- $ stripSpaces -} "ICAO:KSFO, FAA:LAX"
+  parseTest airportIdentifierList {- $ stripSpaces -} "[ICAO:KSFO, FAA:LAX]"
   parseTest setVar "s1_"
   parseTest setExprCode "s1_"
-  parseTest setExprCode $ stripSpaces "[ ICAO : KSFO ]"
-  parseTest setExprCode $ stripSpaces "[ ICAO : KSFO, FAA:LAX ]"
+  parseTest setExprCode {- $ stripSpaces -} "[ICAO:KSFO]"
+  parseTest setExprCode {- $ stripSpaces -} "[ICAO:KSFO, FAA:LAX]"
   --parseTest setAssignStmt $ stripSpaces "s1 = [ICAO:KSFO, FAA:LAX]"
   --parseTest prog $ stripSpaces "s1 = [ICAO:KSFO, FAA:LAX] ; s2 = [IATA:XYZ]"
 
@@ -308,14 +340,14 @@ mkTestAirportIdMap = foldr (\ap -> IM.insert (iD (apId ap)) ap) IM.empty as
              (AirportCodes (Just (FAA "SFO")) Nothing Nothing Nothing)
              "USA"
              (Just ('C', 'A'))
-             (33.7749, (-122.4194))
+             (LatLonDeg 33.7749 (-122.4194))
   
     a2 = Airport (ID 2)
              (AirportCodes (Just (FAA "LAX"))
                            Nothing Nothing  (Just (CAC "USA" "LAX")))
              "USA"
              (Just ('C', 'A'))
-             (33.9416, (-118.4085))
+             (LatLonDeg 33.9416 (-118.4085))
 
     as = [a1, a2]
              
@@ -331,16 +363,18 @@ mkTestAirportMaps = mkAirportMaps mkTestAirportIdMap
 test2 :: IO ()
 test2 = do
   let
-    pStr1 = stripSpaces "s1 = [ICAO:KSFO]; print(s1)" --  ; s2 = [ICAO:KMDW]"
-    fp = "./misc/airports_dev.txt"
-    
+    pStr1 = {- stripSpaces -} "s1 = [ICAO:KSFO]; print(s1)" --  ; s2 = [ICAO:KMDW]"
+    fp = "./misc/airports_stg.txt"
+
+  putStr "loading airports ..."
   aps <- loadAirports fp
+  putStrLn " loaded"
 
   let
     ep1 :: Either ParseError (Program Airport)
     ep1 = runParser prog aps "dummySrc" pStr1
 
---  print ep1
+  -- print ep1
 
   let
     output :: [Text]
@@ -353,10 +387,11 @@ test2 = do
   putStrLn $ "output:"
 
   forM_ output (putStrLn . unpack)
-      
-        
    
   putStrLn "done"
+
+
+
 
 
 
@@ -375,6 +410,6 @@ execSt aps (out0, st0) stmt =  execStmt stmt (out0, st0)
 
 
 --------------------------------------------------------------------------------
-convertSetExpr :: AirportMaps -> SetExpr AirportCode -> SetExpr Airport
-convertSetExpr aps setExprAC = undefined
+--convertSetExpr :: AirportMaps -> SetExpr AirportCode -> SetExpr Airport
+--convertSetExpr aps setExprAC = undefined
 

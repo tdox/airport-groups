@@ -2,6 +2,10 @@
 
 module AirportGroups where
 
+-- base
+import Control.Applicative ((<|>))
+import Data.Maybe (fromJust, isJust)
+
 -- containers
 import Data.IntMap (IntMap)
 import qualified Data.IntMap as IM
@@ -9,7 +13,7 @@ import Data.Map (Map)
 import qualified Data.Map as M
 
 -- text
-import Data.Text (Text)
+import Data.Text (Text, unpack)
 import qualified Data.Text as T
 -- import Groups
 
@@ -31,9 +35,18 @@ type UsStateCode = (Char, Char)
 
 --data AirportCodeType = ICAOtype | IATAtype | CACtype
 
-data ICAO = ICAO Text deriving (Eq, Ord, Show)
-data IATA = IATA Text deriving (Eq, Ord, Show)
-data FAA  = FAA  Text deriving (Eq, Ord, Show)
+data ICAO = ICAO Text deriving (Eq, Ord)
+data IATA = IATA Text deriving (Eq, Ord)
+data FAA  = FAA  Text deriving (Eq, Ord)
+
+instance Show ICAO where
+  show (ICAO t) = "ICAO:" ++ unpack t
+
+instance Show IATA where
+  show (IATA t) = "IATA:" ++ unpack t
+
+instance Show FAA where
+  show (FAA t) = "FAA:" ++ unpack t
 
 data CountryAirportCode = CAC CountryCode Text
                            deriving (Eq, Ord, Show)
@@ -58,7 +71,9 @@ data AirportCodes = AirportCodes { acFAA  :: Maybe FAA
 
 data ID a = ID {iD :: Int} deriving (Eq, Ord, Show)
 
-type LatLonDeg = (Double, Double)
+data LatLonDeg = LatLonDeg { lat :: Double
+                           , lon :: Double
+                           } deriving (Eq, Ord, Show)
 
 
 
@@ -67,7 +82,10 @@ data Airport = Airport { apId          :: ID Airport
                        , apCountryCode :: CountryCode
                        , apUsStateCode :: Maybe (UsStateCode)
                        , apLatLon      :: LatLonDeg
-                       } deriving (Eq, Ord, Show)
+                       } deriving (Eq, Ord)
+
+instance (Show Airport) where
+  show ap = showAirportCodes $ apCodes ap
 
 
 
@@ -79,6 +97,23 @@ data AirportMaps = AirportMaps { apIdMap   :: AirportIdMap
                                , apFaaMap  :: AirportFaaMap
                                , apIcaoMap :: AirportIcaoMap
                                }
+
+
+showAirportCodes :: AirportCodes -> String
+showAirportCodes codes = case mStr of
+  Just str -> str
+  Nothing -> error "showAirportCodes"
+  where
+    mStr :: Maybe String
+    mStr =  (show <$> (acFAA codes))
+        <|> (show <$> (acICAO codes))
+        <|> (show <$> (acIATA codes))
+                          
+
+
+showMaybe :: Show a => Maybe a -> Maybe String
+showMaybe mx = show <$> mx
+
 
 lookup :: AirportCode -> AirportMaps -> Maybe Airport
 lookup code airports =
@@ -112,7 +147,22 @@ mkAirportMaps idMap = AirportMaps idMap (mkFaaMap idMap) (mkIcaoMap idMap)
 isInCountry :: Text -> Airport -> Bool
 isInCountry countryCode ap = apCountryCode ap == countryCode
 
-start here  
+isInState :: Text -> Airport -> Bool
+isInState stateCode ap =
+  apCountryCode ap == "USA"
+  && isJust mStateCode
+  && fromJust mStateCode == readUsStateCode stateCode
+  where
+    mStateCode = apUsStateCode ap
+
+isNorthOf :: Double -> Airport -> Bool
+isNorthOf lati ap = (lat . apLatLon) ap >= lati
+
+isSouthOf :: Double -> Airport -> Bool
+isSouthOf lati ap = (lat . apLatLon) ap <= lati
+
+
+
 --------------------------------------------------------------------------------
 {-
 
@@ -193,11 +243,11 @@ a1 = Airport (ID 1)
              (AirportCodes (Just (FAA "SFO")) Nothing Nothing Nothing)
              "USA"
              (Just ('C', 'A'))
-             (33.7749, (-122.4194))
+             (LatLonDeg 33.7749 (-122.4194))
   
 a2 = Airport (ID 2)
              (AirportCodes (Just (FAA "LAX")) Nothing Nothing  (Just (CAC "USA" "LAX")))
              "USA"
              (Just ('C', 'A'))
-             (33.9416, (-118.4085))
+             (LatLonDeg 33.9416 (-118.4085))
              

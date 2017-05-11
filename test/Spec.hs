@@ -1,80 +1,87 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 
+-- base
+import Control.Monad (foldM, forM_, void)
+
 
 -- containers
-
 import Data.IntMap (IntMap)
 import qualified Data.IntMap as IM
 import Data.Map (Map)
 import qualified Data.Map as M
 
+-- parsec
+import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getState, letter, many1, parse, parseTest, runParser, skipMany, space, string, try, unexpected)
 
-import AirportGroups
+-- text
+import Data.Text (Text, pack, unpack)
 
-{-
-type AirportIdMap = IntMap Airport
-type AirportFaaMap = Map FAA Airport
-type AirportIcaoMap = Map ICAO Airport
+import AirportGroups (Airport)
+import Groups (Program, execProgram)
+import Parser (loadAirports, prog)
 
-data AirportMaps = AirportMaps { apIdMap   :: AirportIdMap
-                               , apFaaMap  :: AirportFaaMap
-                               , apIcaoMap :: AirportIcaoMap
-                               }
-
-
-mkFaaMap :: AirportIdMap -> AirportFaaMap
-mkFaaMap idMap = foldr (\(_, ap) -> case acFAA (apCodes ap) of
-                               Nothing -> id
-                               Just faa -> M.insert faa ap)
-                        M.empty
-                        (IM.toList idMap)
-
-mkIcaoMap :: AirportIdMap -> AirportIcaoMap
-mkIcaoMap idMap = foldr (\(_, ap) -> case acICAO (apCodes ap) of
-                               Nothing -> id
-                               Just icao -> M.insert icao ap)
-                        M.empty
-                        (IM.toList idMap)
-
-mkAirportMaps :: AirportIdMap -> AirportMaps
-mkAirportMaps idMap = AirportMaps idMap (mkFaaMap idMap) (mkIcaoMap idMap)
--}
 
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = do
+  test1
 
 
+test1 :: IO ()
+test1 = do
+  let p1 = "prog1.txt"
+  putStrLn p1
+  readAndExec p1
 
+readAndExec :: String -> IO ()
+readAndExec progName = do
+  let
+    airportsFp = "../misc/airports_stg.txt"
 
+  --putStr "loading airports ..."
+  aps <- loadAirports airportsFp
+  --putStrLn " loaded"
+
+  let programFp = "programs/" ++ progName
+
+  --putStr "loading program ..."
+  progStr <- readFile programFp
+  --putStrLn " loaded"
+
+  let
+    ep1 :: Either ParseError (Program Airport)
+    ep1 = runParser prog aps programFp progStr
+
+  -- print ep1
+
+  let
+    output :: [Text]
+    output = case ep1 of
+      Left err -> [pack $ show err]
+      Right p1 -> case execProgram ([], M.empty) p1 of
+        Left err -> [err]
+        Right (out, _) -> out
+
+  --putStrLn $ "output:"
+
+  forM_ output (putStrLn . unpack)
+   
+  putStrLn "done"
+
+  
+
+{-
 testParser1 :: IO ()
 testParser1 = do
-
   let
     aps = mkTestAirportMaps
 
-
   putStrLn "done"
 
-mkTestAirportIdMap :: AirportIdMap
-mkTestAirportIdMap = foldr (\ap -> IM.insert (iD (apId ap)) ap) IM.empty as
-  where
-    a1 = Airport (ID 1)
-             (AirportCodes (Just (FAA "SFO")) Nothing Nothing Nothing)
-             "USA"
-             (Just ('C', 'A'))
-             (33.7749, (-122.4194))
-  
-    a2 = Airport (ID 2)
-             (AirportCodes (Just (FAA "LAX"))
-                           Nothing Nothing  (Just (CAC "USA" "LAX")))
-             "USA"
-             (Just ('C', 'A'))
-             (33.9416, (-118.4085))
-
-    as = [a1, a2]
              
 
 
 mkTestAirportMaps :: AirportMaps
 mkTestAirportMaps = mkAirportMaps mkTestAirportIdMap
+
+-}
