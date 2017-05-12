@@ -1,0 +1,10 @@
+g1 = [ICAO:KMDW];
+print(g1);
+g2 = [FAA:LAX, FAA:PAO, FAA:SFO];
+print(g2);
+g3 = g1 + g2;
+print(g3);
+g4 = g2 ^ [FAA:PAO, FAA:SFO, FAA:STL];
+print(g4);
+g5 = [ICAO:KSFO] + g1;
+print(g5);

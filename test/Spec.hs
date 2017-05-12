@@ -17,7 +17,7 @@ import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getState, letter, ma
 -- text
 import Data.Text (Text, pack, unpack)
 
-import AirportGroups (Airport)
+import AirportGroups (Airport, AirportMaps)
 import Groups (Program, execProgram)
 import Parser (loadAirports, prog)
 
@@ -29,17 +29,21 @@ main = do
 
 test1 :: IO ()
 test1 = do
-  let p1 = "prog1.txt"
-  putStrLn p1
-  readAndExec p1
-
-readAndExec :: String -> IO ()
-readAndExec progName = do
   let
     airportsFp = "../misc/airports_stg.txt"
+    
+  aps <- loadAirports airportsFp
+  let p1 = "prog2.txt"
+  putStrLn p1
+  readAndExec aps p1
+
+readAndExec :: AirportMaps -> String -> IO ()
+readAndExec aps progName = do
+  let
+    -- airportsFp = "../misc/airports_stg.txt"
 
   --putStr "loading airports ..."
-  aps <- loadAirports airportsFp
+  -- aps <- loadAirports airportsFp
   --putStrLn " loaded"
 
   let programFp = "programs/" ++ progName
@@ -48,11 +52,14 @@ readAndExec progName = do
   progStr <- readFile programFp
   --putStrLn " loaded"
 
+  putStrLn $ "progamFp:"
+  putStrLn progStr
+
   let
     ep1 :: Either ParseError (Program Airport)
     ep1 = runParser prog aps programFp progStr
 
-  -- print ep1
+  print ep1
 
   let
     output :: [Text]
@@ -64,6 +71,7 @@ readAndExec progName = do
 
   --putStrLn $ "output:"
 
+  putStrLn $ "nLines: " ++ show (length output)
   forM_ output (putStrLn . unpack)
    
   putStrLn "done"

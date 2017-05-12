@@ -2,13 +2,20 @@
 
 module Groups where
 
+-- base
 import Data.Monoid ((<>))
+
+-- containers
 import Data.Map ((!), Map, empty)
 import qualified Data.Map as M
 import Data.Set (difference, fromList, intersection, union)
 import qualified Data.Set as S
 
+-- text
 import Data.Text (Text, pack, unpack)
+
+-- trace
+import Debug.Trace
 
 -- import Data.List (nub)
 {-
@@ -261,7 +268,7 @@ evalPredExpr (PNot p) =
 execStmt :: forall a. (Show a, Ord a) =>
         (Output, Store a) -> Stmt a -> Either Err (Output, Store a)
 
-execStmt (out, st) (AssignSet var setExpr) = eOutStore
+execStmt (out, st) (AssignSet var setExpr) = {- traceShowId -} eOutStore
 
   where
     eSet :: Either Err (Set a)

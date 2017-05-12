@@ -1,2 +1,2 @@
-s1 = [ICAO:KSFO];
-print(s1)
+g1 = [ICAO:KSFO];
+print(g1);

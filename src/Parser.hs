@@ -30,14 +30,25 @@ import Groups
 -- note: change AirportCode to Airport
 
 prog :: Parsec String AirportMaps (Program Airport)
-prog = semiSep1 stmt
+prog = many1 stmt
+--prog = semiSep1 stmt
 
 stmt :: Parsec String AirportMaps (Stmt Airport)
-stmt =
+stmt = do
+  spaces
+  st <- stmtTxt
+  spaces
+  void $ char ';'
+  spaces
+  return st
+
+
+stmtTxt :: Parsec String AirportMaps (Stmt Airport)
+stmtTxt =
   try setAssignStmt
 --  <|> try predAssignStmt
   <|> try printStmt
-  <|> try elemOfStmt
+--  <|> try elemOfStmt
 
 
 setAssignStmt :: Parsec String AirportMaps (Stmt Airport)
@@ -71,19 +82,29 @@ setVar = pack <$> identifier
 
 setExpr :: Parsec String AirportMaps (SetExpr Airport)
 setExpr =
-  try (SVar <$> setVar)
-  <|> try setParensExpr
-  <|> try ((Elems . fromList) <$> airports)
-  <|> try setUnionExpr
-  <|> try setIntersectionExpr
-  <|> try setDifferenceExpr
-  <|> try setSuchThatExpr
+--  <|> try setParensExpr
+     try setUnionExpr
+    <|> try setIntersectionExpr
+--  <|> try setDifferenceExpr
+--  <|> try setSuchThatExpr
+    <|> try setVarExpr
+    <|> try setAirportsExpr
+
+setOpArgExpr :: Parsec String AirportMaps (SetExpr Airport)
+setOpArgExpr =
+  try setVarExpr
+  <|> try setAirportsExpr
+
+setVarExpr :: Parsec String AirportMaps (SetExpr Airport)
+setVarExpr = SVar <$> setVar
 
 setExprCode :: Parsec String st (SetExpr AirportCode)
 setExprCode =
   try (SVar <$> setVar)
   <|> try ((Elems . fromList) <$> airportIdentifierList)
 
+setAirportsExpr :: Parsec String AirportMaps (SetExpr Airport)
+setAirportsExpr = (Elems . fromList) <$> airports
 
 setParensExpr :: Parsec String AirportMaps (SetExpr Airport)
 setParensExpr = do
@@ -96,11 +117,13 @@ setParensExpr = do
 
 setUnionExpr :: Parsec String AirportMaps (SetExpr Airport)
 setUnionExpr = do
-  s1 <- setExpr
+--  s1 <- setExpr
+  s1 <- setOpArgExpr
   spaces
   union
   spaces
-  s2 <- setExpr
+--  s2 <- setExpr
+  s2 <- setOpArgExpr
   return $ Union s1 s2
 
 union :: Parsec String AirportMaps ()
@@ -108,11 +131,11 @@ union = void $ char '+'
 
 setIntersectionExpr :: Parsec String AirportMaps (SetExpr Airport)
 setIntersectionExpr = do
-  s1 <- setExpr
+  s1 <- setOpArgExpr
   spaces
   intersection
   spaces
-  s2 <- setExpr
+  s2 <- setOpArgExpr
   return $ Intersection s1 s2
 
 intersection :: Parsec String AirportMaps ()
