@@ -17,7 +17,7 @@ import qualified Data.Map as M
 -- parsec
 import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getInput, getState, letter, many1, parse, parseTest, runParser, skipMany, space, string, try, unexpected)
 
-import qualified Text.Parsec.Token as P -- (commaSep1, makeTokenParser)
+import qualified Text.Parsec.Token as P
 import Text.Parsec.Language (haskellDef)
 
 -- text
@@ -183,10 +183,6 @@ setSuchThatExpr = do
   return $ SuchThat s p
 
 
---suchThat :: Parsec String AirportMaps ()
---suchThat = void $ char '|'
-
-
 airportIdentifiers :: Parsec String st [AirportCode]
 airportIdentifiers = commaSep1 airportIdentifier
 
@@ -307,21 +303,6 @@ semiSep1 = P.semiSep1 lexer
 float = P.float lexer
 
 
-
---stripSpaces :: String -> String
---stripSpaces str = filter (not . isSpace) str
-
-
-  
-
-
-
--- predAssignStmt ::
-
-
-  
-
-
 --------------------------------------------------------------------------------
 
 loadAirports :: FilePath -> IO AirportMaps
@@ -340,7 +321,6 @@ insertAirport ln map0 = IM.insert iD ap map0
       , lonDegsStr, countryCode, stateCodeStr] = words ln
       
     iD = read iDStr
-    -- iD = read $ {- traceShow iDStr -} iDStr
     latDegs = read latDegsStr
     lonDegs = read lonDegsStr
     mFaa  = fromNullStr faaCode
@@ -448,25 +428,5 @@ test2 = do
   putStrLn "done"
 
 
-
-
-
-
-{-
-execProg :: Program Airport -> Either Err (Output, Store Airport)
-execProg p = foldM execStmt ("", M.empty) p
--}
-
-{-
-execSt :: AirportMaps -> (Output, Store Airport) -> Stmt Airport
-       -> Either Err (Output, Store Airport)
-       
-execSt aps (out0, st0) stmt =  execStmt stmt (out0, st0)
--}
- 
-
-
 --------------------------------------------------------------------------------
---convertSetExpr :: AirportMaps -> SetExpr AirportCode -> SetExpr Airport
---convertSetExpr aps setExprAC = undefined
 

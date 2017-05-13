@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+-- TODO 5/13/17 rename to Airport
 module AirportGroups where
 
 -- base
@@ -15,25 +16,11 @@ import qualified Data.Map as M
 -- text
 import Data.Text (Text, unpack)
 import qualified Data.Text as T
--- import Groups
 
-{-
-
-
-
-
-
-
-
--}
-
+--------------------------------------------------------------------------------
 
 type CountryCode = Text
 type UsStateCode = (Char, Char)
---type AirportCode = Text
-
-
---data AirportCodeType = ICAOtype | IATAtype | CACtype
 
 data ICAO = ICAO Text deriving (Eq, Ord)
 data IATA = IATA Text deriving (Eq, Ord)
@@ -66,7 +53,6 @@ data AirportCodes = AirportCodes { acFAA  :: Maybe FAA
                                  } deriving (Eq, Ord, Show)
 
 -- data AirportCountryCode = AirportCountryCode CountryCode AirporCode
-
 -- examples "ICAO:KSFO" "CAC:USA/SFO"
 
 data ID a = ID {iD :: Int} deriving (Eq, Ord, Show)
@@ -74,7 +60,6 @@ data ID a = ID {iD :: Int} deriving (Eq, Ord, Show)
 data LatLonDeg = LatLonDeg { lat :: Double
                            , lon :: Double
                            } deriving (Eq, Ord, Show)
-
 
 
 data Airport = Airport { apId          :: ID Airport
@@ -88,7 +73,6 @@ instance (Show Airport) where
   show ap = showAirportCodes $ apCodes ap
 
 
-
 type AirportIdMap = IntMap Airport
 type AirportFaaMap = Map FAA Airport
 type AirportIcaoMap = Map ICAO Airport
@@ -97,6 +81,9 @@ data AirportMaps = AirportMaps { apIdMap   :: AirportIdMap
                                , apFaaMap  :: AirportFaaMap
                                , apIcaoMap :: AirportIcaoMap
                                }
+
+--------------------------------------------------------------------------------
+
 
 
 showAirportCodes :: AirportCodes -> String
@@ -121,8 +108,8 @@ lookup code airports =
   case code of
     ICAOac icao -> M.lookup icao $ apIcaoMap airports
     FAAac  faa  -> M.lookup faa  $ apFaaMap airports
-    IATAac _    -> error "AirportGroups.lookup: not yet implemented"
-    CACac  _    -> error "AirportGroups.lookup: not yet implemented"
+    IATAac _    -> error "TODO AirportGroups.lookup: not yet implemented"
+    CACac  _    -> error "TODO AirportGroups.lookup: not yet implemented"
 
 
 
@@ -199,8 +186,8 @@ isSouthOf lati ap = (lat . apLatLon) ap <= lati
 <set-such-that-expr> ::=  <set-expr> "|" <pred-expr>
 
 
-<union> ::= "\/" | ":U:" | "+"
-<intersection> ::= "/\" | ":I:" | "^"
+<union> ::=  "+"
+<intersection> ::=  "^"
 
 <airport-identifer-list> = "[" <airport-identifiers> "]"
 

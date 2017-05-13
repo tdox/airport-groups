@@ -19,20 +19,19 @@ import Data.Text (Text, pack, unpack)
 -- trace
 import Debug.Trace
 
--- import Data.List (nub)
 {-
 
 
-s1 = {"a", "b", "c"}
-s2 = {"c", "d, "e"}
-s3 = {}
+s1 = ["a", "b", "c"]
+s2 = ["c", "d, "e"]
+s3 = []
 
-s3 = union s1 s2                    -- s1 U s3 = {"a", "b", "c", "d", "e"}
-s4 = intersection s1 s2             -- {"c"}
+s3 = s1 + s2                         -- ["a", "b", "c", "d", "e"]
+s4 = s1 ^ s2                         -- ["c"]
 
-s5 = union s1 {"b", "c", "x"}       -- {"a", "b", "c", "x"}
-s6 = difference s1 s2 = s1 - s2     -- {"a", "b"}
-s7 = s1 suchThat pred(s1)
+s5 = s1 + ["b", "c", "x"]           -- ["a", "b", "c", "x"]
+s6 = s1 - s2                        -- ["a", "b"]
+s7 = s1 | pred(s1)
 
 b1 = element s1 "a"  -- true
 
@@ -56,9 +55,9 @@ a2 := ICAO:KSFO;
 as1 := {FAA:SFO, ICAO:KSFO}; -- Set Airport
 as2 := {FAA:MDW, ICAO:TEB};
 
-as3 := as1 intersect as2
-as4 := as1 \/ as2 -- disjunction, ||, or, union
-as5 := as1 /\ as2 -- conjuction, &&,  and, intersection
+as3 := as1 +  as2
+as4 := as1 +  as2 -- disjunction, ||, or, union
+as5 := as1 ^  as2 -- conjuction, &&,  and, intersection
 
 loc1 := (34.345, -72.22) -- (lat, lon) in decimal degrees
 
@@ -96,20 +95,16 @@ as3 := usAps suchThat isInCAorOr
 
 -}
 
--- type Elem = Int
 
 type Var = Text
--- type BoolVar = Text
 
-data Pred a = Pred (a -> Bool) -- deriving Functor
+data Pred a = Pred (a -> Bool)
 
 instance Show (Pred a) where
   show (Pred _) = "pred"
 
 type  Set a = S.Set a
 
-
--- type SetVars a = Map Var (Set a)
 
 data SetExpr a = Elems (Set a)
                | SVar Var
@@ -128,9 +123,6 @@ data BoolExpr = BoolLit Bool
               | IsMemberOf Elem SetExpr
 -}
 
--- type PredVar = Text
--- type PredVars a = Map Var (Pred a)
-
 data PredExpr a = PLit (Pred a)
                 | PVar Var
                 | PAnd (PredExpr a) (PredExpr a)
@@ -138,7 +130,6 @@ data PredExpr a = PLit (Pred a)
                 | PNot (PredExpr a)
 
                 deriving Show
-                --deriving (Functor, Show)
 
 type Store a = Map Var (Val a)
 
@@ -148,17 +139,10 @@ data Expr a = SetExpr a
 
 data Val a = SetVal (Set a)
            | PredVal (Pred a)
-           -- deriving (Show)
 
 instance Show a => (Show (Val a)) where
   show (SetVal s) = show (S.toList s)
   show (PredVal p) = show p
-
-{-           
-data Store a = Store { setVars  :: SetVars a
-                     , predVars :: PredVars a
-                     } deriving Show
--}
 
 data AssignSetStmt a = AssignSetStmt Var (SetExpr a)
 
@@ -167,23 +151,10 @@ data Stmt a = AssignSet Var (SetExpr a)
             | AssignPred Var (PredExpr a)
             | Print Var
             | ElemOf a (SetExpr a)
-           -- | PrintPred PredVar
-            -- | Seq [Stmt a]
             deriving Show
 
 type Output = [Text]
-
 type Program a = [Stmt a]
-
-
-{-
-data Stmt where
-  AssignSet :: SetVar -> SetExpr a -> Stmt
-  AssignPred :: PredVar -> PredExpr a -> Stmt
-  Seq :: [Stmt] -> Stmt
-
--}  
-
 type Err = Text
 
 evalSetExpr :: forall a. Ord a => Store a -> SetExpr a -> Either Err (Set a)
@@ -203,10 +174,6 @@ evalSetExpr st (Intersection xs ys) =
 evalSetExpr st (Difference xs ys) =
   difference <$> (evalSetExpr st xs) <*> (evalSetExpr st ys)
 
-{-
-evalSetExpr (SuchThat xs (Pred p)) =
-  S.filter (\x -> p x) (evalSetExpr xs)
--}
 
 evalSetExpr st (SuchThat xs pe) =
   case evalSetExpr st xs of
@@ -218,10 +185,6 @@ evalSetExpr st (SuchThat xs pe) =
       case ePred of
         Left err -> Left err
         Right pred -> Right $ S.filter (\x -> evalPred pred x) s
---      undefined
-      
---            Right S.filter (\x -> (evalPred (evalPredExpr st pe)) x) s
-                       
 
 -----
 
@@ -253,40 +216,21 @@ evalIsElementOf st e (Difference xs ys) =
        <*> (not <$> (S.member e <$> (evalSetExpr st ys)))
 
   
---  S.member e (evalSetExpr st xs) && not (S.member e (evalSetExpr st ys))
-
--- evalIsElementOf e s@(SuchThat _ _) = S.member e $ evalSetExpr s
--- uses following default
-
 evalIsElementOf st e s = S.member e <$> evalSetExpr st s
 
 evalPred :: (Pred a) -> a -> Bool
 evalPred (Pred f) e = f e
 
-{-
-evalEitherPred :: (Pred a) -> Either Err a -> Either Err Bool
-evalEitherPred p ex = case ex of
-  Left err -> Left err
-  Right x -> p <$> x
--}
-
--- evalPredExpr :: Store a -> (PredExpr a) -> Either Err Bool
-
--- evalPredExpr st (PLit pred) = Right $ evalPred pred
 
 
 evalPredExprOld :: Store a -> (PredExpr a) -> (Pred a)
 
 evalPredExprOld st (PLit pred) = pred
 
---evalPredExprOld :: Store a -> Either Err (PredExpr a) -> Either Err (Pred a)
---evalPredExprOld st (Left err) = Left err
-
--- evalPredExprOld st (PLit pred) = Right pred
 
 evalPredExprOld st (PVar v) = case M.lookup v st of
-  Nothing -> error "evalPredExprOld" -- Left $ v <> " not found"
-  Just (SetVal _) -> error "evalPredExprOld2" -- Left $ v <> " is a set variable"
+  Nothing -> error "evalPredExprOld"
+  Just (SetVal _) -> error "evalPredExprOld2"
   Just (PredVal p) -> p
 
 evalPredExprOld st (PAnd  p q) =
@@ -346,15 +290,10 @@ execStmt (out, st) (AssignSet var setExpr) = {- traceShowId -} eOutStore
       Left err -> Left err
       Right set -> Right (out, M.insert var (SetVal set) st)
 
-
---execStmt  (out, st) (AssignPred var predExpr) =
---  Right $ (out, M.insert var (PredVal (evalPredExpr st predExpr)) st)
-
 execStmt  (out, st) (AssignPred var predExpr) = do
   case evalPredExpr st predExpr of
     Left err -> Left err
     Right predExp -> Right (out, M.insert var (PredVal predExp) st)
---  Right $ (out, M.insert var (PredVal (evalPredExpr st predExpr)) st)
 
 execStmt  (out0, st) (Print var) = rslt
   where
@@ -389,19 +328,6 @@ execProgram  os0@(out0, st0) (s:ss) =
   where
     eOutStore = execStmt  os0 s
 
-
-
-
-{-
-pe101 :: PredExpr
-pe101 = undefined
-
-p101 :: Pred
-p101 = evalPredExpr pe101
-
-b101 :: Bool
-b101 = (evalPred p101) 5
--}
 
 --------------------------------------------------------------------------------
 
@@ -544,13 +470,3 @@ ok = and oks
 
 --------------------------------------------------------------------------------
 
-{-
-pe101 :: PredExpr
-pe101 = undefined
-
-p101 :: Pred
-p101 = evalPredExpr pe101
-
-b101 :: Bool
-b101 = (evalPred p101) 5
--}

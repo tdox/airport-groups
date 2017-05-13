@@ -1,9 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-
 -- base
 import Control.Monad (foldM, forM_, void)
-
 
 -- containers
 import Data.IntMap (IntMap)
@@ -12,7 +10,9 @@ import Data.Map (Map)
 import qualified Data.Map as M
 
 -- parsec
-import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getState, letter, many1, parse, parseTest, runParser, skipMany, space, string, try, unexpected)
+import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getState
+                   , letter, many1, parse, parseTest, runParser, skipMany
+                   , space, string, try, unexpected)
 
 -- text
 import Data.Text (Text, pack, unpack)
@@ -39,19 +39,10 @@ test1 = do
 
 readAndExec :: AirportMaps -> String -> IO ()
 readAndExec aps progName = do
-  let
-    -- airportsFp = "../misc/airports_stg.txt"
-
-  --putStr "loading airports ..."
-  -- aps <- loadAirports airportsFp
-  --putStrLn " loaded"
 
   let programFp = "./test/programs/" ++ progName
 
-  --putStr "loading program ..."
   progStr <- readFile programFp
-  --putStrLn " loaded"
-
   putStrLn $ "progamFp:"
   putStrLn progStr
 
@@ -69,27 +60,8 @@ readAndExec aps progName = do
         Left err -> [err]
         Right (out, _) -> out
 
-  --putStrLn $ "output:"
-
   putStrLn $ "nLines: " ++ show (length output)
   forM_ output (putStrLn . unpack)
    
   putStrLn "done"
 
-  
-
-{-
-testParser1 :: IO ()
-testParser1 = do
-  let
-    aps = mkTestAirportMaps
-
-  putStrLn "done"
-
-             
-
-
-mkTestAirportMaps :: AirportMaps
-mkTestAirportMaps = mkAirportMaps mkTestAirportIdMap
-
--}
