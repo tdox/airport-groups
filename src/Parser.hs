@@ -15,7 +15,7 @@ import qualified Data.IntMap as IM
 import qualified Data.Map as M
 
 -- parsec
-import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getState, letter, many1, parse, parseTest, runParser, skipMany, space, string, try, unexpected)
+import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getInput, getState, letter, many1, parse, parseTest, runParser, skipMany, space, string, try, unexpected)
 
 import qualified Text.Parsec.Token as P -- (commaSep1, makeTokenParser)
 import Text.Parsec.Language (haskellDef)
@@ -37,32 +37,48 @@ stmt :: Parsec String AirportMaps (Stmt Airport)
 stmt = do
   spaces
   st <- stmtTxt
-  spaces
-  void $ char ';'
+--  spaces
+--  void $ char ';'
   spaces
   return st
 
 
 stmtTxt :: Parsec String AirportMaps (Stmt Airport)
-stmtTxt =
-  try setAssignStmt
---  <|> try predAssignStmt
-  <|> try printStmt
+stmtTxt = 
+  try predAssignStmt
+--    setAssignStmt
+   <|> try setAssignStmt
+--   <|> try predAssignStmt
+   <|> try printStmt
 --  <|> try elemOfStmt
 
 
 setAssignStmt :: Parsec String AirportMaps (Stmt Airport)
 setAssignStmt = do
+  --inp <- getInput
+  --traceM $ "setAssignStmt: inp: " ++ inp
   var <- setVar
   spaces
   void $ char '='
   spaces
   expr <- setExpr
+  spaces
+  void $ char ';'
   return $ AssignSet var expr
 
 
 predAssignStmt :: Parsec String AirportMaps (Stmt Airport)
-predAssignStmt = error "predAssignStmt"
+predAssignStmt = do
+  --inp <- getInput
+  --traceM $ "predAssignStmt: inp: " ++ inp
+  var <- predVar
+  spaces
+  void $ char '='
+  spaces
+  expr <- predExpr
+  spaces
+  void $ char ';'
+  return $ AssignPred var expr
 
 
 printStmt :: Parsec String st (Stmt Airport)
@@ -72,6 +88,8 @@ printStmt = do
   var <- setVar
   spaces
   void $ char ')'
+  spaces
+  void $ char ';'
   return $ Print var
   
 elemOfStmt :: Parsec String st (Stmt Airport)
@@ -86,7 +104,7 @@ setExpr =
      try setUnionExpr
     <|> try setIntersectionExpr
 --  <|> try setDifferenceExpr
---  <|> try setSuchThatExpr
+    <|> try setSuchThatExpr
     <|> try setVarExpr
     <|> try setAirportsExpr
 
@@ -154,11 +172,19 @@ difference :: Parsec String AirportMaps ()
 difference = void $ char '-'
 
 setSuchThatExpr :: Parsec String AirportMaps (SetExpr Airport)
-setSuchThatExpr = error "setSuchThatExpr"
+setSuchThatExpr = do
+  --inp <- getInput
+  --traceM $ "setSuchThatExpr: inp: " ++ inp
+  s <- setOpArgExpr
+  spaces
+  void $ char '|'
+  spaces
+  p <- predOpArgExpr
+  return $ SuchThat s p
 
 
-suchThat :: Parsec String AirportMaps ()
-suchThat = void $ char '|'
+--suchThat :: Parsec String AirportMaps ()
+--suchThat = void $ char '|'
 
 
 airportIdentifiers :: Parsec String st [AirportCode]
@@ -217,10 +243,18 @@ iataIdentifier = do
   return $ IATA $ pack code
 
 
-predExpr ::  Parsec String st (PredExpr Airport)
+predExpr ::  Parsec String AirportMaps (PredExpr Airport)
 predExpr =
-  try (PVar <$> predVar)
-  <|> try isInCountryPL
+  try isInCountryPL
+  <|> try predVarExpr
+
+
+predVarExpr :: Parsec String AirportMaps (PredExpr Airport)
+predVarExpr = PVar <$> predVar
+
+predOpArgExpr :: Parsec String AirportMaps (PredExpr Airport)
+predOpArgExpr =
+  try predVarExpr
 
 
 predVar :: Parsec String st Var

@@ -190,7 +190,7 @@ evalSetExpr _ (Elems xs) = Right xs
 evalSetExpr st (SVar v) = case M.lookup v st of
   Nothing -> Left $ v <> " not found"
   Just (SetVal s) -> Right s
-  Just (PredVal _) -> Left $ v <> " is a set variable"
+  Just (PredVal _) -> Left $ v <> " is a pridicate variable"
 
 evalSetExpr st (Union xs ys) =
   union <$> (evalSetExpr st xs) <*> (evalSetExpr st ys)
@@ -209,7 +209,7 @@ evalSetExpr (SuchThat xs (Pred p)) =
 evalSetExpr st (SuchThat xs pe) =
   case evalSetExpr st xs of
     Left err -> Left err
-    Right s -> Right $ S.filter (\x -> (evalPred (evalPredExpr pe)) x) s
+    Right s -> Right $ S.filter (\x -> (evalPred (evalPredExpr st pe)) x) s
                        
 
 -----
@@ -250,19 +250,45 @@ evalIsElementOf st e (Difference xs ys) =
 evalIsElementOf st e s = S.member e <$> evalSetExpr st s
 
 evalPred :: (Pred a) -> a -> Bool
-evalPred (Pred f) e = f e 
+evalPred (Pred f) e = f e
 
-evalPredExpr :: (PredExpr a) -> (Pred a)
-evalPredExpr (PLit pred) = pred
+{-
+evalEitherPred :: (Pred a) -> Either Err a -> Either Err Bool
+evalEitherPred p ex = case ex of
+  Left err -> Left err
+  Right x -> p <$> x
+-}
 
-evalPredExpr (PAnd  p q) =
-  Pred (\e -> ((evalPred (evalPredExpr p) e) && (evalPred (evalPredExpr q) e)))
+-- evalPredExpr :: Store a -> (PredExpr a) -> Either Err Bool
 
-evalPredExpr (POr p q) =
-  Pred (\e -> ((evalPred (evalPredExpr p) e) || (evalPred (evalPredExpr q) e)))
+-- evalPredExpr st (PLit pred) = Right $ evalPred pred
 
-evalPredExpr (PNot p) =
-  Pred (\e -> (not (evalPred (evalPredExpr p) e)))
+
+evalPredExpr :: Store a -> (PredExpr a) -> (Pred a)
+
+evalPredExpr st (PLit pred) = pred
+
+--evalPredExpr :: Store a -> Either Err (PredExpr a) -> Either Err (Pred a)
+--evalPredExpr st (Left err) = Left err
+
+-- evalPredExpr st (PLit pred) = Right pred
+
+evalPredExpr st (PVar v) = case M.lookup v st of
+  Nothing -> error "evalPredExpr" -- Left $ v <> " not found"
+  Just (SetVal _) -> error "evalPredExpr2" -- Left $ v <> " is a set variable"
+  Just (PredVal p) -> p
+
+evalPredExpr st (PAnd  p q) =
+   Pred (\x -> (&&)  (evalPred (evalPredExpr st p) x)
+                       (evalPred (evalPredExpr st q) x))
+
+evalPredExpr st (POr p q) =
+  Pred (\e -> ((evalPred (evalPredExpr st p) e)
+               || (evalPred (evalPredExpr st q) e)))
+
+evalPredExpr st (PNot p) =
+  Pred (\e -> (not (evalPred (evalPredExpr st p) e)))
+
 
 
 execStmt :: forall a. (Show a, Ord a) =>
@@ -281,7 +307,7 @@ execStmt (out, st) (AssignSet var setExpr) = {- traceShowId -} eOutStore
 
 
 execStmt  (out, st) (AssignPred var predExpr) =
-  Right $ (out, M.insert var (PredVal (evalPredExpr predExpr)) st)
+  Right $ (out, M.insert var (PredVal (evalPredExpr st predExpr)) st)
 
 execStmt  (out0, st) (Print var) = rslt
   where
@@ -396,7 +422,7 @@ ok18 = b14
 p2 = Pred (< 5)
 
 p3 :: Pred Int
-p3 = evalPredExpr (PAnd (PLit p1) (PLit p2))
+p3 = evalPredExpr st (PAnd (PLit p1) (PLit p2))
 b15 = evalPred p3 0
 ok19 = not b15
 
@@ -406,7 +432,7 @@ ok20 = b16
 b17 = evalPred p3 5
 ok21 = not b17
 
-p4 = evalPredExpr (POr (PLit p1) (PLit p2))
+p4 = evalPredExpr st (POr (PLit p1) (PLit p2))
 
 b18 = evalPred p4 0
 ok22 = b18
@@ -417,7 +443,7 @@ ok23 = b19
 b20 = evalPred p4 5
 ok24 = b20
 
-p5 = evalPredExpr (PNot (PLit (Pred (>3))))
+p5 = evalPredExpr st (PNot (PLit (Pred (>3))))
 
 b21 = evalPred p5 0
 ok25 = b21

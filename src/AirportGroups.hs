@@ -189,7 +189,12 @@ isSouthOf lati ap = (lat . apLatLon) ap <= lati
              | <set-such-that-expr>
 
 <set-paren-expr> ::= "(" <set-expr> ")"
-<set-union-expr> ::= <set-expr> <union> <set-expr>
+<set-union-expr> ::= <set-op-arg-expr> <union> <set-op-arg-expr>
+
+<set-op-arg-expr> :: = <set-var>
+                     | <set-paren-expr>
+                     | <set-airport-identifier-list>
+
 <set-intersection-expr> ::= <set-expr> <intersection> <set-expr>
 <set-such-that-expr> ::=  <set-expr> "|" <pred-expr>
 
