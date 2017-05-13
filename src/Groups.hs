@@ -3,6 +3,8 @@
 module Groups where
 
 -- base
+import Control.Applicative (liftA2)
+import Control.Monad (liftM2)
 import Data.Monoid ((<>))
 
 -- containers
@@ -184,7 +186,7 @@ data Stmt where
 
 type Err = Text
 
-evalSetExpr :: Ord a => Store a -> SetExpr a -> Either Err (Set a)
+evalSetExpr :: forall a. Ord a => Store a -> SetExpr a -> Either Err (Set a)
 evalSetExpr _ (Elems xs) = Right xs
 
 evalSetExpr st (SVar v) = case M.lookup v st of
@@ -209,7 +211,16 @@ evalSetExpr (SuchThat xs (Pred p)) =
 evalSetExpr st (SuchThat xs pe) =
   case evalSetExpr st xs of
     Left err -> Left err
-    Right s -> Right $ S.filter (\x -> (evalPred (evalPredExpr st pe)) x) s
+--    Right s -> Right S.filter (\x -> (evalPred (evalPredExpr st pe)) x) s
+--    Right s -> S.filter <$> \x -> evalPredExpr st pe x <*> s
+    Right s -> do
+      let ePred :: Either Err (Pred a) = evalPredExpr st pe
+      case ePred of
+        Left err -> Left err
+        Right pred -> Right $ S.filter (\x -> evalPred pred x) s
+--      undefined
+      
+--            Right S.filter (\x -> (evalPred (evalPredExpr st pe)) x) s
                        
 
 -----
@@ -264,32 +275,62 @@ evalEitherPred p ex = case ex of
 -- evalPredExpr st (PLit pred) = Right $ evalPred pred
 
 
-evalPredExpr :: Store a -> (PredExpr a) -> (Pred a)
+evalPredExprOld :: Store a -> (PredExpr a) -> (Pred a)
 
-evalPredExpr st (PLit pred) = pred
+evalPredExprOld st (PLit pred) = pred
 
---evalPredExpr :: Store a -> Either Err (PredExpr a) -> Either Err (Pred a)
---evalPredExpr st (Left err) = Left err
+--evalPredExprOld :: Store a -> Either Err (PredExpr a) -> Either Err (Pred a)
+--evalPredExprOld st (Left err) = Left err
 
--- evalPredExpr st (PLit pred) = Right pred
+-- evalPredExprOld st (PLit pred) = Right pred
 
-evalPredExpr st (PVar v) = case M.lookup v st of
-  Nothing -> error "evalPredExpr" -- Left $ v <> " not found"
-  Just (SetVal _) -> error "evalPredExpr2" -- Left $ v <> " is a set variable"
+evalPredExprOld st (PVar v) = case M.lookup v st of
+  Nothing -> error "evalPredExprOld" -- Left $ v <> " not found"
+  Just (SetVal _) -> error "evalPredExprOld2" -- Left $ v <> " is a set variable"
   Just (PredVal p) -> p
 
-evalPredExpr st (PAnd  p q) =
-   Pred (\x -> (&&)  (evalPred (evalPredExpr st p) x)
-                       (evalPred (evalPredExpr st q) x))
+evalPredExprOld st (PAnd  p q) =
+   Pred (\x -> (&&)  (evalPred (evalPredExprOld st p) x)
+                       (evalPred (evalPredExprOld st q) x))
 
-evalPredExpr st (POr p q) =
-  Pred (\e -> ((evalPred (evalPredExpr st p) e)
-               || (evalPred (evalPredExpr st q) e)))
+evalPredExprOld st (POr p q) =
+  Pred (\e -> ((evalPred (evalPredExprOld st p) e)
+               || (evalPred (evalPredExprOld st q) e)))
 
-evalPredExpr st (PNot p) =
-  Pred (\e -> (not (evalPred (evalPredExpr st p) e)))
+evalPredExprOld st (PNot p) =
+  Pred (\e -> (not (evalPred (evalPredExprOld st p) e)))
 
 
+
+
+evalPredExpr :: Store a -> (PredExpr a) -> Either Err (Pred a)
+
+evalPredExpr st (PLit pred) = Right pred
+
+evalPredExpr st (PVar v) = case M.lookup v st of
+  Nothing -> Left $ v <> " not found"
+  Just (SetVal _) -> Left $ v <> " is a set variable"
+  Just (PredVal p) -> Right p
+
+evalPredExpr st (PAnd  p q) = do
+  predP :: Pred a <- evalPredExpr st p
+  predQ :: Pred a <- evalPredExpr st q
+  let r :: a -> Bool = \x -> evalPred predP x && evalPred predQ x
+  return $ Pred r
+
+evalPredExpr st (POr  p q) = do
+  predP <- evalPredExpr st p
+  predQ <- evalPredExpr st q
+  return $ Pred (\x -> evalPred predP x || evalPred predQ x)
+
+evalPredExpr st (PNot p) = do
+  predP <- evalPredExpr st p
+  return $ Pred (\x -> not (evalPred predP x))
+
+
+
+
+   
 
 execStmt :: forall a. (Show a, Ord a) =>
         (Output, Store a) -> Stmt a -> Either Err (Output, Store a)
@@ -306,8 +347,14 @@ execStmt (out, st) (AssignSet var setExpr) = {- traceShowId -} eOutStore
       Right set -> Right (out, M.insert var (SetVal set) st)
 
 
-execStmt  (out, st) (AssignPred var predExpr) =
-  Right $ (out, M.insert var (PredVal (evalPredExpr st predExpr)) st)
+--execStmt  (out, st) (AssignPred var predExpr) =
+--  Right $ (out, M.insert var (PredVal (evalPredExpr st predExpr)) st)
+
+execStmt  (out, st) (AssignPred var predExpr) = do
+  case evalPredExpr st predExpr of
+    Left err -> Left err
+    Right predExp -> Right (out, M.insert var (PredVal predExp) st)
+--  Right $ (out, M.insert var (PredVal (evalPredExpr st predExpr)) st)
 
 execStmt  (out0, st) (Print var) = rslt
   where
@@ -422,7 +469,7 @@ ok18 = b14
 p2 = Pred (< 5)
 
 p3 :: Pred Int
-p3 = evalPredExpr st (PAnd (PLit p1) (PLit p2))
+Right p3 = evalPredExpr st (PAnd (PLit p1) (PLit p2))
 b15 = evalPred p3 0
 ok19 = not b15
 
@@ -432,7 +479,7 @@ ok20 = b16
 b17 = evalPred p3 5
 ok21 = not b17
 
-p4 = evalPredExpr st (POr (PLit p1) (PLit p2))
+Right p4 = evalPredExpr st (POr (PLit p1) (PLit p2))
 
 b18 = evalPred p4 0
 ok22 = b18
@@ -443,7 +490,7 @@ ok23 = b19
 b20 = evalPred p4 5
 ok24 = b20
 
-p5 = evalPredExpr st (PNot (PLit (Pred (>3))))
+Right p5 = evalPredExpr st (PNot (PLit (Pred (>3))))
 
 b21 = evalPred p5 0
 ok25 = b21

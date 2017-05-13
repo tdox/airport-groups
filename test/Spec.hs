@@ -30,7 +30,7 @@ main = do
 test1 :: IO ()
 test1 = do
   let
-    airportsFp = "../misc/airports_stg.txt"
+    airportsFp = "./misc/airports_dev.txt"
     
   aps <- loadAirports airportsFp
   let p1 = "prog3.txt"
@@ -46,7 +46,7 @@ readAndExec aps progName = do
   -- aps <- loadAirports airportsFp
   --putStrLn " loaded"
 
-  let programFp = "programs/" ++ progName
+  let programFp = "./test/programs/" ++ progName
 
   --putStr "loading program ..."
   progStr <- readFile programFp
