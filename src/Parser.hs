@@ -15,7 +15,9 @@ import qualified Data.IntMap as IM
 import qualified Data.Map as M
 
 -- parsec
-import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getInput, getState, letter, many1, parse, parseTest, runParser, skipMany, space, string, try, unexpected)
+import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getInput
+                   , getState, letter, many1, parse, parseTest, runParser
+                   , skipMany, space, string, try, unexpected)
 
 import qualified Text.Parsec.Token as P
 import Text.Parsec.Language (haskellDef)
@@ -241,16 +243,53 @@ iataIdentifier = do
 
 predExpr ::  Parsec String AirportMaps (PredExpr Airport)
 predExpr =
-  try isInCountryPL
+  try predAndExpr
+  <|> try predOrExpr
+  <|> try predNotExpr
+  <|> try isInCountryPL
   <|> try predVarExpr
+
 
 
 predVarExpr :: Parsec String AirportMaps (PredExpr Airport)
 predVarExpr = PVar <$> predVar
 
+predAndExpr :: Parsec String AirportMaps (PredExpr Airport)
+predAndExpr = do
+  p <- predOpArgExpr
+  spaces
+  void $ string "&&"
+  spaces
+  q <- predOpArgExpr
+  return $ POr p q
+
+
+predOrExpr :: Parsec String AirportMaps (PredExpr Airport)
+predOrExpr = do
+  p <- predOpArgExpr
+  spaces
+  void $ string "||"
+  spaces
+  q <- predOpArgExpr
+  return $ POr p q
+
+predNotExpr :: Parsec String AirportMaps (PredExpr Airport)
+predNotExpr = do
+  inp <- getInput
+  traceM $ "predNotExpr: inp: " ++ inp
+  void $ char '!'
+  spaces
+  p <- predOpArgExpr
+  return $ PNot p
+
 predOpArgExpr :: Parsec String AirportMaps (PredExpr Airport)
-predOpArgExpr =
-  try predVarExpr
+predOpArgExpr = do
+  inp <- getInput
+  traceM $ "predOpArgExpr: inp: " ++ inp
+  try isInCountryPL
+    <|> try predNotExpr
+    <|> try predVarExpr
+
 
 
 predVar :: Parsec String st Var

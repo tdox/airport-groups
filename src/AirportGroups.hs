@@ -206,7 +206,8 @@ isSouthOf lati ap = (lat . apLatLon) ap <= lati
 
 <pred-expr> ::= <pred-var>
               | "(" <pred-expr> ")"
-              | <pred-expr> <pred-op> <pred-expr>
+              | <pred-op-arg-expr> <pred-op> <pred-op-arg-expr>
+              | <pred-not-expr> <pred-op-arg-expr>
               | "isInState(" <state-code> ")"
               | "isInCountry(" <country-code> ")"
               | "isNearInMiles(" <airport-identifier> "," <float> ")"
@@ -218,6 +219,7 @@ isSouthOf lati ap = (lat . apLatLon) ap <= lati
 <pred-op> ::= <and> | <or>
 <and> ::= "&&"
 <or> ::= "||"
+<not> ::= "!"
 
 <state-code" ::= <character><character>
 <country-code" ::= <characters>

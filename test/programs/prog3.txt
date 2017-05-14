@@ -1,9 +1,19 @@
 p1 = isInCountry(USA);
-g1 = [FAA:SFO, ICAO:SAEZ];
+g1 = [FAA:SFO, ICAO:SAEZ, ICAO:EGLL];
 print(g1);
 g2 = g1 | p1;
 print(g2);
 p2 = isInCountry(ARG);
 g3 = g1 | p2;
 print(g3);
-
+g4 = g1 | isInCountry(ARG);
+print(g4);
+g5 = g1 | isInCountry(GBR);
+print(g5);
+p3 = isInCountry(ARG) || isInCountry(GBR);
+g6 = g1 | p3;
+print(g6);
+g7 = g1 | !p3;
+print(g7);
+g8 = g1 | ! isInCountry(USA);
+print(g8);

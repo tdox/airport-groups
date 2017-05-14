@@ -50,6 +50,7 @@ readAndExec aps progName = do
     ep1 :: Either ParseError (Program Airport)
     ep1 = runParser prog aps programFp progStr
 
+  putStrLn "ep1:"
   print ep1
 
   let

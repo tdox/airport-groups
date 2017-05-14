@@ -300,7 +300,7 @@ execStmt  (out0, st) (Print var) = rslt
     mVal = M.lookup var st
 
     rslt = case mVal of
-      Nothing -> Left (var <> " undefined")
+      Nothing -> Left (var <> ": undefined variable")
       Just val -> Right $ ((var <> " = " <> pack (show val)) : out0, st)
 
 
