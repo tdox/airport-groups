@@ -13,7 +13,11 @@ print(g5);
 p3 = isInCountry(ARG) || isInCountry(GBR);
 g6 = g1 | p3;
 print(g6);
+
+
 g7 = g1 | !p3;
 print(g7);
 g8 = g1 | ! isInCountry(USA);
 print(g8);
+
+

@@ -1,1 +1,3 @@
-g2 = [FAX:SFO] | isInCountry(USA);
+g1 = [FAA:SFO];
+g2 = [FAA:LAX];
+g3 = [FAX:MIA];

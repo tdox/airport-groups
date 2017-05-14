@@ -4,7 +4,7 @@ module Parser where
 
 
 -- base
-import Control.Monad (foldM, forM_, void)
+import Control.Monad (foldM, forM_, void, when)
 import Data.Char (isSpace)
 import Data.Maybe (fromMaybe, maybe)
 import Debug.Trace
@@ -16,7 +16,7 @@ import qualified Data.Map as M
 
 -- parsec
 import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getInput
-                   , getState, letter, many1, parse, parseTest, runParser
+                   , getState, letter, many, many1, parse, parseTest, runParser
                    , skipMany, space, string, try, unexpected)
 
 import qualified Text.Parsec.Token as P
@@ -29,14 +29,42 @@ import AirportGroups as AG
 import Groups
 
 --------------------------------------------------------------------------------
--- note: change AirportCode to Airport
+
 
 prog :: Parsec String AirportMaps (Program Airport)
-prog = many1 stmt
+prog = do
+--  spaces
+  s <- stmt
+  inp <- getInput
+  let more = not $ null inp
+  if more
+  then do
+    ss <- prog
+    return (s:ss)
+  else
+   return [s]
+
+{-
+  when more $ do
+    ss <- prog
+    return $ s:ss
+-}
+
+{-
+prog = do
+  s1 <- stmt
+  s2 <- stmt
+  return [s1, s2]
+-}
+
+--prog = many stmt
+--prog = many1 stmt
 --prog = semiSep1 stmt
 
 stmt :: Parsec String AirportMaps (Stmt Airport)
 stmt = do
+  inp <- getInput
+  traceM $ "stmt: inp: " ++ inp
   spaces
   st <- stmtTxt
 --  spaces
@@ -57,8 +85,8 @@ stmtTxt =
 
 setAssignStmt :: Parsec String AirportMaps (Stmt Airport)
 setAssignStmt = do
-  --inp <- getInput
-  --traceM $ "setAssignStmt: inp: " ++ inp
+  inp <- getInput
+  traceM $ "setAssignStmt: inp: " ++ inp
   var <- setVar
   spaces
   void $ char '='
@@ -101,7 +129,9 @@ setVar :: Parsec String st Var
 setVar = pack <$> identifier
 
 setExpr :: Parsec String AirportMaps (SetExpr Airport)
-setExpr =
+setExpr = do
+     inp <- getInput
+     traceM $ "setExpr: inp: " ++ inp
 --  <|> try setParensExpr
      try setUnionExpr
     <|> try setIntersectionExpr
@@ -210,20 +240,24 @@ airport = do
 
 
 airportIdentifier :: Parsec String st AirportCode
-airportIdentifier =
+airportIdentifier = do
+  inp <- getInput
+  traceM $ "airportIdentifier: inp: " ++ inp
   try (do
     faa <- faaIdentifier
     return $ FAAac faa)
   <|> try (do
     icao <- icaoIdentifier
     return $ ICAOac icao)
-  <|> (do
+  <|> try (do
     iata <- iataIdentifier
     return $ IATAac iata)
 
 
 faaIdentifier :: Parsec String st FAA
 faaIdentifier = do
+  inp <- getInput
+  traceM $ "faaIdentifier: inp: " ++ inp
   string "FAA:"
   code <- many1 letter
   return $ FAA $ pack code
