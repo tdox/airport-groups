@@ -1,3 +1,7 @@
 g1 = [FAA:SFO];
 g2 = [FAA:LAX];
-g3 = [FAX:MIA];
+g3 = [FAA:MIA, FAA:LAX];
+g4 = (g1 + g2) ^ g3;
+print(g4);
+g5 = g1 + (g2 ^ g3);
+print(g5);

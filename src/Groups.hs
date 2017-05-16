@@ -108,6 +108,7 @@ type  Set a = S.Set a
 
 data SetExpr a = Elems (Set a)
                | SVar Var
+               | SParens (SetExpr a)
                | Union (SetExpr a) (SetExpr a)
                | Intersection (SetExpr a) (SetExpr a)
                | Difference (SetExpr a) (SetExpr a)
@@ -125,6 +126,7 @@ data BoolExpr = BoolLit Bool
 
 data PredExpr a = PLit (Pred a)
                 | PVar Var
+                | PParens (PredExpr a)
                 | PAnd (PredExpr a) (PredExpr a)
                 | POr (PredExpr a) (PredExpr a)
                 | PNot (PredExpr a)
@@ -164,6 +166,8 @@ evalSetExpr st (SVar v) = case M.lookup v st of
   Nothing -> Left $ v <> " not found"
   Just (SetVal s) -> Right s
   Just (PredVal _) -> Left $ v <> " is a pridicate variable"
+
+evalSetExpr st (SParens xs) = evalSetExpr st xs
 
 evalSetExpr st (Union xs ys) =
   union <$> (evalSetExpr st xs) <*> (evalSetExpr st ys)
@@ -255,6 +259,8 @@ evalPredExpr st (PVar v) = case M.lookup v st of
   Nothing -> Left $ v <> " not found"
   Just (SetVal _) -> Left $ v <> " is a set variable"
   Just (PredVal p) -> Right p
+
+evalPredExpr st (PParens p) = evalPredExpr st p
 
 evalPredExpr st (PAnd  p q) = do
   predP :: Pred a <- evalPredExpr st p

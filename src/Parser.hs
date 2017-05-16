@@ -15,7 +15,7 @@ import qualified Data.IntMap as IM
 import qualified Data.Map as M
 
 -- parsec
-import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getInput
+import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, endBy1, getInput
                    , getState, letter, many, many1, parse, parseTest, runParser
                    , skipMany, space, string, try, unexpected)
 
@@ -32,6 +32,8 @@ import Groups
 
 
 prog :: Parsec String AirportMaps (Program Airport)
+--prog = endBy1 stmt (char ';') 
+
 prog = do
 --  spaces
   s <- stmt
@@ -43,6 +45,7 @@ prog = do
     return (s:ss)
   else
    return [s]
+
 
 {-
   when more $ do
@@ -132,18 +135,22 @@ setExpr :: Parsec String AirportMaps (SetExpr Airport)
 setExpr = do
      inp <- getInput
      traceM $ "setExpr: inp: " ++ inp
---  <|> try setParensExpr
      try setUnionExpr
-    <|> try setIntersectionExpr
+      <|> try setIntersectionExpr
 --  <|> try setDifferenceExpr
-    <|> try setSuchThatExpr
-    <|> try setVarExpr
-    <|> try setAirportsExpr
+      <|> try setSuchThatExpr
+      <|> try setVarExpr
+      <|> try setAirportsExpr
+      <|> try setParensExpr
+
 
 setOpArgExpr :: Parsec String AirportMaps (SetExpr Airport)
-setOpArgExpr =
+setOpArgExpr = do
+  inp <- getInput
+  traceM $ "setOpArgExpr: inp: " ++ inp
   try setVarExpr
   <|> try setAirportsExpr
+  <|> try setParensExpr
 
 setVarExpr :: Parsec String AirportMaps (SetExpr Airport)
 setVarExpr = SVar <$> setVar
@@ -158,12 +165,19 @@ setAirportsExpr = (Elems . fromList) <$> airports
 
 setParensExpr :: Parsec String AirportMaps (SetExpr Airport)
 setParensExpr = do
+  inp <-getInput
+  traceM $ "setParensExpr: " ++ inp
+  se <- parens setExpr
+  return $ SParens se
+  
+  {-
   void $ char '('
   spaces
   s <- setExpr
   spaces
   void $ char ')'
   return s
+  -}
 
 setUnionExpr :: Parsec String AirportMaps (SetExpr Airport)
 setUnionExpr = do
@@ -282,6 +296,7 @@ predExpr =
   <|> try predNotExpr
   <|> try isInCountryPL
   <|> try predVarExpr
+  <|> try predParensExpr
 
 
 
@@ -324,6 +339,12 @@ predOpArgExpr = do
     <|> try predNotExpr
     <|> try predVarExpr
 
+predParensExpr :: Parsec String AirportMaps (PredExpr Airport)
+predParensExpr = do
+  inp <-getInput
+  traceM $ "predParensExpr: " ++ inp
+  ex <- parens predExpr
+  return $ PParens ex
 
 
 predVar :: Parsec String st Var
@@ -374,6 +395,7 @@ squares = P.squares lexer
 identifier = P.identifier lexer
 semiSep1 = P.semiSep1 lexer
 float = P.float lexer
+parens = P.parens lexer
 
 
 --------------------------------------------------------------------------------
