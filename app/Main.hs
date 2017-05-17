@@ -3,4 +3,4 @@ module Main where
 -- import Lib
 
 main :: IO ()
-main = putStrLn "done"
+main = putStrLn "app/main"

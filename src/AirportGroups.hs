@@ -73,6 +73,7 @@ instance (Show Airport) where
   show ap = showAirportCodes $ apCodes ap
 
 
+
 type AirportIdMap = IntMap Airport
 type AirportFaaMap = Map FAA Airport
 type AirportIcaoMap = Map ICAO Airport

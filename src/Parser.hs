@@ -233,13 +233,13 @@ airportIdentifiers :: Parsec String st [AirportCode]
 airportIdentifiers = commaSep1 airportIdentifier
 
 airportIdentifierList :: Parsec String st [AirportCode]
-airportIdentifierList = squares airportIdentifiers
+airportIdentifierList = braces airportIdentifiers
 
 airports' :: Parsec String AirportMaps [Airport]
 airports' = commaSep1 airport
 
 airports :: Parsec String AirportMaps [Airport]
-airports = squares airports'
+airports = braces airports'
 
 airport :: Parsec String AirportMaps Airport
 airport = do
@@ -391,7 +391,7 @@ spaces = skipMany space
 
 lexer = P.makeTokenParser haskellDef
 commaSep1 = P.commaSep1 lexer
-squares = P.squares lexer
+braces = P.braces lexer
 identifier = P.identifier lexer
 semiSep1 = P.semiSep1 lexer
 float = P.float lexer
@@ -449,13 +449,13 @@ test1 = do
   parseTest airportIdentifier "ICAO:KSFO"
   parseTest airportIdentifier "IATA:YSFO"
   parseTest airportIdentifiers {- $ stripSpaces -} "ICAO:KSFO, FAA:LAX"
-  parseTest airportIdentifierList {- $ stripSpaces -} "[ICAO:KSFO, FAA:LAX]"
+  parseTest airportIdentifierList {- $ stripSpaces -} "{ICAO:KSFO, FAA:LAX}"
   parseTest setVar "s1_"
   parseTest setExprCode "s1_"
-  parseTest setExprCode {- $ stripSpaces -} "[ICAO:KSFO]"
-  parseTest setExprCode {- $ stripSpaces -} "[ICAO:KSFO, FAA:LAX]"
-  --parseTest setAssignStmt $ stripSpaces "s1 = [ICAO:KSFO, FAA:LAX]"
-  --parseTest prog $ stripSpaces "s1 = [ICAO:KSFO, FAA:LAX] ; s2 = [IATA:XYZ]"
+  parseTest setExprCode {- $ stripSpaces -} "{ICAO:KSFO}"
+  parseTest setExprCode {- $ stripSpaces -} "{ICAO:KSFO, FAA:LAX}"
+  --parseTest setAssignStmt $ stripSpaces "s1 = {ICAO:KSFO, FAA:LAX}"
+  --parseTest prog $ stripSpaces "s1 = {ICAO:KSFO, FAA:LAX} ; s2 = {IATA:XYZ}"
 
 testLoadAirports :: IO ()
 testLoadAirports = do
@@ -495,7 +495,7 @@ mkTestAirportMaps = mkAirportMaps mkTestAirportIdMap
 test2 :: IO ()
 test2 = do
   let
-    pStr1 = {- stripSpaces -} "s1 = [ICAO:KSFO]; print(s1)" --  ; s2 = [ICAO:KMDW]"
+    pStr1 = {- stripSpaces -} "s1 = {ICAO:KSFO}; print(s1)" --  ; s2 = {ICAO:KMDW}"
     fp = "./misc/airports_stg.txt"
 
   putStr "loading airports ..."

@@ -1,2 +1,2 @@
-g1 = [ICAO:KSFO];
+g1 = {ICAO:KSFO};
 print(g1);

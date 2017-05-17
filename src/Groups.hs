@@ -143,7 +143,7 @@ data Val a = SetVal (Set a)
            | PredVal (Pred a)
 
 instance Show a => (Show (Val a)) where
-  show (SetVal s) = show (S.toList s)
+  show (SetVal s) = swapForBraces $ show (S.toList s)
   show (PredVal p) = show p
 
 data AssignSetStmt a = AssignSetStmt Var (SetExpr a)
@@ -165,7 +165,7 @@ evalSetExpr _ (Elems xs) = Right xs
 evalSetExpr st (SVar v) = case M.lookup v st of
   Nothing -> Left $ v <> " not found"
   Just (SetVal s) -> Right s
-  Just (PredVal _) -> Left $ v <> " is a pridicate variable"
+  Just (PredVal _) -> Left $ v <> " is a predicate variable"
 
 evalSetExpr st (SParens xs) = evalSetExpr st xs
 
@@ -335,6 +335,14 @@ execProgram  os0@(out0, st0) (s:ss) =
     eOutStore = execStmt  os0 s
 
 
+swapForBraces :: String -> String
+swapForBraces str = map swapBrace str
+
+swapBrace :: Char -> Char
+swapBrace '[' = '{'
+swapBrace ']' = '}'
+swapBrace c = c
+
 --------------------------------------------------------------------------------
 
 set1 = fromList [1, 2, 3] :: Set Int
@@ -446,17 +454,17 @@ Right os1 = execStmt  (out0, st0) stmt1 :: Either Err (Output, Store Int)
 
 stmt2 = Print "s3"
 Right os2 = execStmt  os1 stmt2
-ok28 = fst os2 == ["s3 = [1,2,3,4]"]
+ok28 = fst os2 == ["s3 = {1,2,3,4}"]
 
 stmt3 = Print "s999"
 Left os3 = execStmt  os2 stmt3
-ok29 = os3 == "s999 undefined"
+ok29 = os3 == "s999: undefined variable"
 
 stmt4 = AssignSet "s4" s4
 Right os4 = execStmt  os2 stmt4
 stmt4a = Print "s4"
 Right os4a = execStmt  os4 stmt4a
-ok30 = fst os4a == ["s4 = [3,4]","s3 = [1,2,3,4]"]
+ok30 = fst os4a == ["s4 = {3,4}","s3 = {1,2,3,4}"]
 
 
 stmt5 = AssignPred "p1" (PAnd (PLit p1) (PLit p2))

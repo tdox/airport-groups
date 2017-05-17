@@ -1,5 +1,5 @@
 p1 = isInCountry(USA);
-g1 = [FAA:SFO, ICAO:SAEZ, ICAO:EGLL];
+g1 = {FAA:SFO, ICAO:SAEZ, ICAO:EGLL};
 print(g1);
 g2 = g1 | p1;
 print(g2);
