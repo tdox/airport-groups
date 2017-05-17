@@ -55,9 +55,9 @@ a2 := ICAO:KSFO;
 as1 := {FAA:SFO, ICAO:KSFO}; -- Set Airport
 as2 := {FAA:MDW, ICAO:TEB};
 
-as3 := as1 +  as2
-as4 := as1 +  as2 -- disjunction, ||, or, union
-as5 := as1 ^  as2 -- conjuction, &&,  and, intersection
+as3 := as1 + as2
+as4 := as1 + as2 -- union
+as5 := as1 ^ as2 -- intersection
 
 loc1 := (34.345, -72.22) -- (lat, lon) in decimal degrees
 

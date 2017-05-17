@@ -1,0 +1,6 @@
+s1 = {FAA:SFO, FAA:LAX, FAA:MIA};
+p1 = isInCountry(USA);
+p2 = isInState(CA);
+p3 = isNorthOfLatitude(30);
+s2 = s1 | p3;
+print(s2);

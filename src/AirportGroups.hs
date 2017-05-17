@@ -144,11 +144,16 @@ isInState stateCode ap =
     mStateCode = apUsStateCode ap
 
 isNorthOf :: Double -> Airport -> Bool
-isNorthOf lati ap = (lat . apLatLon) ap >= lati
+isNorthOf lati ap = (lat . apLatLon) ap > lati
 
 isSouthOf :: Double -> Airport -> Bool
-isSouthOf lati ap = (lat . apLatLon) ap <= lati
+isSouthOf lati ap = (lat . apLatLon) ap < lati
 
+isEastOf :: Double -> Airport -> Bool
+isEastOf long ap = (lon . apLatLon) ap > long
+
+isWestOf :: Double -> Airport -> Bool
+isWestOf long ap = (lon . apLatLon) ap < long
 
 
 --------------------------------------------------------------------------------

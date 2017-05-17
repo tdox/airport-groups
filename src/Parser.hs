@@ -295,6 +295,11 @@ predExpr =
   <|> try predOrExpr
   <|> try predNotExpr
   <|> try isInCountryPL
+  <|> try isInStatePL
+  <|> try isNorthOfPL
+  <|> try isSouthOfPL
+  <|> try isEastOfPL
+  <|> try isWestOfPL
   <|> try predVarExpr
   <|> try predParensExpr
 
@@ -379,12 +384,57 @@ isInStatePL  = predLit "isInState" isInState
 
 isNorthOfPL :: Parsec String st (PredExpr Airport)
 isNorthOfPL = do
-  void $ string "isNorthOfLatitudeDegs("
+  inp <- getInput
+  traceM $ "isNorthOfPL: " ++ inp
+  void $ string "isNorthOfLatitude("
   spaces
-  lat <- float
+  lat <- intOrFloat
   spaces
   void $ char ')'
   return $ PLit $ Pred $ isNorthOf lat
+
+isSouthOfPL :: Parsec String st (PredExpr Airport)
+isSouthOfPL = do
+  inp <- getInput
+  traceM $ "isSouthOfPL: " ++ inp
+  void $ string "isSouthOfLatitude("
+  spaces
+  lat <- intOrFloat
+  spaces
+  void $ char ')'
+  return $ PLit $ Pred $ isSouthOf lat
+
+isEastOfPL :: Parsec String st (PredExpr Airport)
+isEastOfPL = do
+  inp <- getInput
+  traceM $ "isEastOfPL: " ++ inp
+  void $ string "isEastOfLatitude("
+  spaces
+  lat <- intOrFloat
+  spaces
+  void $ char ')'
+  return $ PLit $ Pred $ isEastOf lat
+
+isWestOfPL :: Parsec String st (PredExpr Airport)
+isWestOfPL = do
+  inp <- getInput
+  traceM $ "isWestOfPL: " ++ inp
+  void $ string "isWestOfLatitude("
+  spaces
+  lat <- intOrFloat
+  spaces
+  void $ char ')'
+  return $ PLit $ Pred $ isWestOf lat
+
+intOrFloat :: Parsec String st Double
+intOrFloat = do
+  try (do
+    f <- float
+    return f)
+  <|> try (do
+    i <- integer
+    return $ fromInteger i
+    )
 
 spaces :: Parsec String st ()
 spaces = skipMany space
@@ -396,6 +446,7 @@ identifier = P.identifier lexer
 semiSep1 = P.semiSep1 lexer
 float = P.float lexer
 parens = P.parens lexer
+integer = P.integer lexer
 
 
 --------------------------------------------------------------------------------

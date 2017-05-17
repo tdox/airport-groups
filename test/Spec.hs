@@ -33,7 +33,7 @@ test1 = do
     airportsFp = "./misc/airports_dev.txt"
     
   aps <- loadAirports airportsFp
-  let p1 = "prog4.txt"
+  let p1 = "prog5.txt"
   putStrLn p1
   readAndExec aps p1
 
