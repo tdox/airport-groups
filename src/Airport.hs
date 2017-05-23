@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- TODO 5/13/17 rename to Airport
-module AirportGroups where
+module Airport where
 
 -- base
 import Control.Applicative ((<|>))
@@ -155,6 +154,35 @@ isEastOf long ap = (lon . apLatLon) ap > long
 isWestOf :: Double -> Airport -> Bool
 isWestOf long ap = (lon . apLatLon) ap < long
 
+
+degreesToRadians :: Double -> Double
+degreesToRadians deg = deg * pi / 180.0
+
+distanceMiles :: LatLonDeg -> LatLonDeg -> Double
+distanceMiles (LatLonDeg p1Deg l1Deg)
+              (LatLonDeg p2Deg l2Deg) = d
+  where
+    p1 = degreesToRadians p1Deg
+    l1 = degreesToRadians l1Deg
+    
+    p2 = degreesToRadians p2Deg
+    l2 = degreesToRadians l2Deg
+
+    halfDeltaP = (p2 - p1) / 2.0
+    halfDeltaL = (l2 - l1) / 2.0
+
+    sinHalfDeltaP = sin(halfDeltaP)
+    sinHalfDeltaL = sin(halfDeltaL)
+
+    a = sinHalfDeltaP * sinHalfDeltaP
+      + cos p1 * cos p2 * sinHalfDeltaL * sinHalfDeltaL
+
+    c = 2.0 * atan2 (sqrt a) (sqrt (1.0 - a))
+
+    earthRad = 3959 -- miles
+
+    d = c * earthRad
+    
 
 --------------------------------------------------------------------------------
 {-

@@ -13,3 +13,5 @@ s5 = s1 | (isNorthOf(36) && isSouthOf(42))
 print(s5);
 s6 = s1 | !isSouthOf(45);
 print(s6);
+s7 = s1 | (isEastOf(-75) || isWestOf(-120));
+print(s7);

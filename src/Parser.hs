@@ -25,7 +25,7 @@ import Text.Parsec.Language (haskellDef)
 -- text
 import Data.Text (Text, pack, unpack)
 
-import AirportGroups as AG
+import Airport
 import Groups
 
 --------------------------------------------------------------------------------
@@ -246,7 +246,7 @@ airport = do
   code <- airportIdentifier
   maps <- getState
   
-  let mAirport = AG.lookup code maps
+  let mAirport = Airport.lookup code maps
 
   case mAirport of
     Nothing -> unexpected "unknown airport"
@@ -417,23 +417,23 @@ isEastOfPL :: Parsec String st (PredExpr Airport)
 isEastOfPL = do
   inp <- getInput
   traceM $ "isEastOfPL: " ++ inp
-  void $ string "isEastOfLongitude("
+  void $ string "isEastOf("
   spaces
-  lat <- intOrFloat
+  lon <- intOrFloat
   spaces
   void $ char ')'
-  return $ PLit $ Pred $ isEastOf lat
+  return $ PLit $ Pred $ isEastOf lon
 
 isWestOfPL :: Parsec String st (PredExpr Airport)
 isWestOfPL = do
   inp <- getInput
   traceM $ "isWestOfPL: " ++ inp
-  void $ string "isWestOfLongitude("
+  void $ string "isWestOf("
   spaces
-  lat <- intOrFloat
+  lon <- intOrFloat
   spaces
   void $ char ')'
-  return $ PLit $ Pred $ isWestOf lat
+  return $ PLit $ Pred $ isWestOf lon
 
 intOrFloat :: Parsec String st Double
 intOrFloat = do

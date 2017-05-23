@@ -17,7 +17,7 @@ import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getState
 -- text
 import Data.Text (Text, pack, unpack)
 
-import AirportGroups (Airport, AirportMaps)
+import Airport (Airport, AirportMaps)
 import Groups (Program, execProgram)
 import Parser (loadAirports, prog)
 
