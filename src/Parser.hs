@@ -225,7 +225,7 @@ setSuchThatExpr = do
   spaces
   void $ char '|'
   spaces
-  p <- predOpArgExpr
+  p <- suchThatPredArgExpr
   return $ SuchThat s p
 
 
@@ -315,7 +315,7 @@ predAndExpr = do
   void $ string "&&"
   spaces
   q <- predOpArgExpr
-  return $ POr p q
+  return $ PAnd p q
 
 
 predOrExpr :: Parsec String AirportMaps (PredExpr Airport)
@@ -336,13 +336,22 @@ predNotExpr = do
   p <- predOpArgExpr
   return $ PNot p
 
+suchThatPredArgExpr :: Parsec String AirportMaps (PredExpr Airport)
+suchThatPredArgExpr = predExpr
+
 predOpArgExpr :: Parsec String AirportMaps (PredExpr Airport)
 predOpArgExpr = do
   inp <- getInput
   traceM $ "predOpArgExpr: inp: " ++ inp
   try isInCountryPL
+    <|> try isInStatePL
+    <|> try isNorthOfPL
+    <|> try isSouthOfPL
+    <|> try isEastOfPL
+    <|> try isWestOfPL
     <|> try predNotExpr
     <|> try predVarExpr
+    <|> try predParensExpr
 
 predParensExpr :: Parsec String AirportMaps (PredExpr Airport)
 predParensExpr = do
@@ -386,7 +395,7 @@ isNorthOfPL :: Parsec String st (PredExpr Airport)
 isNorthOfPL = do
   inp <- getInput
   traceM $ "isNorthOfPL: " ++ inp
-  void $ string "isNorthOfLatitude("
+  void $ string "isNorthOf("
   spaces
   lat <- intOrFloat
   spaces
@@ -397,7 +406,7 @@ isSouthOfPL :: Parsec String st (PredExpr Airport)
 isSouthOfPL = do
   inp <- getInput
   traceM $ "isSouthOfPL: " ++ inp
-  void $ string "isSouthOfLatitude("
+  void $ string "isSouthOf("
   spaces
   lat <- intOrFloat
   spaces
@@ -408,7 +417,7 @@ isEastOfPL :: Parsec String st (PredExpr Airport)
 isEastOfPL = do
   inp <- getInput
   traceM $ "isEastOfPL: " ++ inp
-  void $ string "isEastOfLatitude("
+  void $ string "isEastOfLongitude("
   spaces
   lat <- intOrFloat
   spaces
@@ -419,7 +428,7 @@ isWestOfPL :: Parsec String st (PredExpr Airport)
 isWestOfPL = do
   inp <- getInput
   traceM $ "isWestOfPL: " ++ inp
-  void $ string "isWestOfLatitude("
+  void $ string "isWestOfLongitude("
   spaces
   lat <- intOrFloat
   spaces

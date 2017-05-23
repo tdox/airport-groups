@@ -1,0 +1,15 @@
+s1 = {FAA:SEA, FAA:SFO, FAA:LAX, FAA:DEN, FAA:DAL, FAA:MDW, FAA:TEB, FAA:MIA};
+p1 = isNorthOf(36) && isSouthOf(42);
+s2 = s1 | p1;
+print(s2);
+p2 = isEastOf(-110) && isWestOf(-90);
+s3 = s1 | p1 && p2;
+print(s3);
+p3 = p1 && (isEastOf(-110) && isWestOf(-90));
+s4 = s1 | p3;
+print(s4);
+s5 = s1 | (isNorthOf(36) && isSouthOf(42))
+          && (isEastOf(-110) && isWestOf(-90));
+print(s5);
+s6 = s1 | !isSouthOf(45);
+print(s6);
