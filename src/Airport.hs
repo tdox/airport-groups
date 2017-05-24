@@ -76,10 +76,12 @@ instance (Show Airport) where
 type AirportIdMap = IntMap Airport
 type AirportFaaMap = Map FAA Airport
 type AirportIcaoMap = Map ICAO Airport
+type AirportIataMap = Map IATA Airport
 
 data AirportMaps = AirportMaps { apIdMap   :: AirportIdMap
                                , apFaaMap  :: AirportFaaMap
                                , apIcaoMap :: AirportIcaoMap
+                               , apIataMap :: AirportIataMap
                                }
 
 --------------------------------------------------------------------------------
@@ -108,8 +110,8 @@ lookup code airports =
   case code of
     ICAOac icao -> M.lookup icao $ apIcaoMap airports
     FAAac  faa  -> M.lookup faa  $ apFaaMap airports
-    IATAac _    -> error "TODO AirportGroups.lookup: not yet implemented"
-    CACac  _    -> error "TODO AirportGroups.lookup: not yet implemented"
+    IATAac iata -> M.lookup iata $ apIataMap airports
+    CACac  _    -> error "TODO Airport.lookup: not yet implemented"
 
 
 
@@ -126,9 +128,18 @@ mkIcaoMap idMap = foldr (\(_, ap) -> case acICAO (apCodes ap) of
                                Just icao -> M.insert icao ap)
                         M.empty
                         (IM.toList idMap)
+                        
+mkIataMap :: AirportIdMap -> AirportIataMap
+mkIataMap idMap = foldr (\(_, ap) -> case acIATA (apCodes ap) of
+                               Nothing -> id
+                               Just icao -> M.insert icao ap)
+                        M.empty
+                        (IM.toList idMap)
 
 mkAirportMaps :: AirportIdMap -> AirportMaps
-mkAirportMaps idMap = AirportMaps idMap (mkFaaMap idMap) (mkIcaoMap idMap)
+mkAirportMaps idMap =
+  AirportMaps idMap
+              (mkFaaMap idMap) (mkIcaoMap idMap) (mkIataMap idMap)
 
 
 isInCountry :: Text -> Airport -> Bool
@@ -183,6 +194,11 @@ distanceMiles (LatLonDeg p1Deg l1Deg)
 
     d = c * earthRad
     
+
+distanceBetweenAirports :: Airport -> Airport -> Double
+distanceBetweenAirports ap1 ap2 = distanceMiles latLon1 latLon2
+  where
+    [latLon1, latLon2] = map apLatLon [ap1, ap2]
 
 --------------------------------------------------------------------------------
 {-
