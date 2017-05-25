@@ -39,13 +39,13 @@ test1 = do
     
   aps <- loadAirports airportsFp
 
-  testDistance aps
+  -- testDistance aps
 
-  {-
-  let p1 = "prog6.txt"
+  
+  let p1 = "prog7.txt"
   putStrLn p1
   readAndExec aps p1
--}
+
 
 readAndExec :: AirportMaps -> String -> IO ()
 readAndExec aps progName = do

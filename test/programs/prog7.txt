@@ -1,0 +1,4 @@
+s1 = {FAA:SEA, FAA:SFO, FAA:LAX, FAA:DEN, FAA:DAL, FAA:MDW, FAA:TEB, FAA:MIA};
+airportIsInSet(FAA:SEA, s1);
+airportIsInSet(ICAO:KSEA, s1);
+airportIsInSet(FAA:EQY, s1);

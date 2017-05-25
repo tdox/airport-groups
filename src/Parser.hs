@@ -29,7 +29,81 @@ import Airport
 import Groups
 
 --------------------------------------------------------------------------------
+{-
 
+<program> ::=  <stmt> ";"  | <stmt> ";" <program>
+
+<stmt> ::= <set-assign-stmt>
+         | <pred-assign-stmt>
+         | <print-stmt>
+         | <elem-of-stmt>
+
+<set-assign-stmt> ::= <set-var> "=" <set-expr>
+<pred-assign-stmt> ::= <pred-var> "=" <pred-expr>
+<print-stmt> ::= "print(" <set-var> ")"
+<elem-of-stmt> ::= "airportIsInSet(" <airport-identifier> "," <set-expr> ")"
+
+<set-var> ::= <alphanumeric>
+
+<set-expr> ::= <set-var>
+             | <set-paren-expr>
+             | <airport-identifier-list>
+             | <set-union-expr>
+             | <set-intersection-expr>
+             | <set-difference-expr>
+             | <set-such-that-expr>
+
+<set-paren-expr> ::= "(" <set-expr> ")"
+<set-union-expr> ::= <set-op-arg-expr> <union> <set-op-arg-expr>
+
+<set-op-arg-expr> :: = <set-var>
+                     | <set-paren-expr>
+                     | <set-airport-identifier-list>
+
+<set-intersection-expr> ::= <set-expr> <intersection> <set-expr>
+<set-such-that-expr> ::=  <set-expr> "|" <pred-expr>
+
+
+<union> ::=  "+"
+<intersection> ::=  "^"
+
+<airport-identifer-list> = "[" <airport-identifiers> "]"
+
+<airport-identifiers> ::= <airport-identifier>
+                        | <airport-identifier> "," <airport-identifiers>
+
+<airport-identifier> ::= <faa-identifier>
+                       | <icao-identifier>
+                       | <iata-identifier>
+                       | <acc-identifier>
+
+<faa-identifier>  ::= "FAA:"<characters>
+<icao-identifier> ::= "ICAO:"<characters>
+<iata-identifier> ::= "IATA:"<characters>
+<acc-identifier>  ::= "ACC:"<country-code>":"<characters>
+
+<pred-expr> ::= <pred-var>
+              | "(" <pred-expr> ")"
+              | <pred-op-arg-expr> <pred-op> <pred-op-arg-expr>
+              | <pred-not-expr> <pred-op-arg-expr>
+              | "isInState(" <state-code> ")"
+              | "isInCountry(" <country-code> ")"
+              | "isNearInMiles(" <airport-identifier> "," <float> ")"
+              | "isNorthOfLatitudeDegs(" <float> ")"
+              | "isSouthOfLatitudeDegs(" <float> ")"
+              | "isSouthOfLatitudeDegs(" <float> ")"
+              | "isBetweenLongitudesDegs(" <float> "," <float> ")"
+
+<pred-op> ::= <and> | <or>
+<and> ::= "&&"
+<or> ::= "||"
+<not> ::= "!"
+
+<state-code" ::= <character><character>
+<country-code" ::= <characters>
+
+-}
+--------------------------------------------------------------------------------
 
 prog :: Parsec String AirportMaps (Program Airport)
 --prog = endBy1 stmt (char ';') 
@@ -83,7 +157,7 @@ stmtTxt =
    <|> try setAssignStmt
 --   <|> try predAssignStmt
    <|> try printStmt
---  <|> try elemOfStmt
+  <|> try airportIsInSetStmt
 
 
 setAssignStmt :: Parsec String AirportMaps (Stmt Airport)
@@ -125,8 +199,20 @@ printStmt = do
   void $ char ';'
   return $ Print var
   
-elemOfStmt :: Parsec String st (Stmt Airport)
-elemOfStmt = error "elemOfStmt"
+airportIsInSetStmt :: Parsec String AirportMaps (Stmt Airport)
+airportIsInSetStmt = do
+  void $ string "airportIsInSet("
+  spaces
+  ap <- airport
+  spaces
+  void $ char ','
+  spaces
+  setV <- setVarExpr
+  spaces
+  void $ char ')'
+  spaces
+  void $ char ';'
+  return $ ElemOf ap setV
 
 setVar :: Parsec String st Var
 setVar = pack <$> identifier
@@ -252,6 +338,10 @@ airport = do
     Nothing -> unexpected "unknown airport"
     Just airport -> return airport
 
+
+--set :: Parsec String AirportMaps (SetVar Airport)
+--set = do
+  
 
 airportIdentifier :: Parsec String st AirportCode
 airportIdentifier = do
