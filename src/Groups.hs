@@ -153,6 +153,7 @@ data Stmt a = AssignSet Var (SetExpr a)
             | AssignPred Var (PredExpr a)
             | Print Var
             | ElemOf a (SetExpr a)
+            | SatisfiesPred a (PredExpr a)
             deriving Show
 
 type Output = [Text]
@@ -279,7 +280,7 @@ evalPredExpr st (PNot p) = do
 
 
 
-
+evalSatisfiesPred :: Store a -> START HERE
    
 
 execStmt :: forall a. (Show a, Ord a) =>
@@ -321,7 +322,7 @@ execStmt  (out, st) (ElemOf x setExpr) = eOutStore
       Right b -> Right (pack (show b) : out, st)
 
 
-
+execStmt (out, st) (SatisfiesPred x predExpr) = eOutStore
 
 
 execProgram outSt [] = Right outSt

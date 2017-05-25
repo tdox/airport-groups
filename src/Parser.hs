@@ -36,12 +36,14 @@ import Groups
 <stmt> ::= <set-assign-stmt>
          | <pred-assign-stmt>
          | <print-stmt>
-         | <elem-of-stmt>
+         | <airport-is-in-set-stmt>
+         | <airport-satisfies-pred-stmt>
 
 <set-assign-stmt> ::= <set-var> "=" <set-expr>
 <pred-assign-stmt> ::= <pred-var> "=" <pred-expr>
 <print-stmt> ::= "print(" <set-var> ")"
-<elem-of-stmt> ::= "airportIsInSet(" <airport-identifier> "," <set-expr> ")"
+<airport-is-in-set-stmt> ::= "airportIsInSet(" <airport-identifier> "," <set-var> ")"
+<airport-satisfies-pred-stmt> ::= "airportSatisfiesPredicate(" <airport-identifier> "," <pred-var> ")
 
 <set-var> ::= <alphanumeric>
 
@@ -153,11 +155,10 @@ stmt = do
 stmtTxt :: Parsec String AirportMaps (Stmt Airport)
 stmtTxt = 
   try predAssignStmt
---    setAssignStmt
    <|> try setAssignStmt
---   <|> try predAssignStmt
    <|> try printStmt
-  <|> try airportIsInSetStmt
+   <|> try airportIsInSetStmt
+   <|> try airportSatisfiesPredStmt
 
 
 setAssignStmt :: Parsec String AirportMaps (Stmt Airport)
@@ -213,6 +214,21 @@ airportIsInSetStmt = do
   spaces
   void $ char ';'
   return $ ElemOf ap setV
+
+airportSatisfiesPredStmt :: Parsec String AirportMaps (Stmt Airport)
+airportSatisfiesPredStmt = do
+  void $ string "airportSatisfiesPredicate("
+  spaces
+  ap <- airport
+  spaces
+  void $ char ','
+  spaces
+  predV <- predVarExpr
+  spaces
+  void $ char ')'
+  spaces
+  void $ char ';'
+  return $ AirportSatisfiesPred ap predV
 
 setVar :: Parsec String st Var
 setVar = pack <$> identifier
