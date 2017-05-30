@@ -165,6 +165,11 @@ isEastOf long ap = (lon . apLatLon) ap > long
 isWestOf :: Double -> Airport -> Bool
 isWestOf long ap = (lon . apLatLon) ap < long
 
+isNearAirport :: Airport -> Double -> Airport -> Bool
+isNearAirport ap0 radiusM ap1 =
+    distanceMiles (apLatLon ap0) (apLatLon ap1) <= radiusM
+    
+
 
 degreesToRadians :: Double -> Double
 degreesToRadians deg = deg * pi / 180.0

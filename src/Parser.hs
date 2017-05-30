@@ -158,7 +158,7 @@ stmtTxt =
    <|> try setAssignStmt
    <|> try printStmt
    <|> try airportIsInSetStmt
-   <|> try airportSatisfiesPredStmt
+--   <|> try airportSatisfiesPredStmt
 
 
 setAssignStmt :: Parsec String AirportMaps (Stmt Airport)
@@ -215,6 +215,7 @@ airportIsInSetStmt = do
   void $ char ';'
   return $ ElemOf ap setV
 
+{-
 airportSatisfiesPredStmt :: Parsec String AirportMaps (Stmt Airport)
 airportSatisfiesPredStmt = do
   void $ string "airportSatisfiesPredicate("
@@ -229,6 +230,7 @@ airportSatisfiesPredStmt = do
   spaces
   void $ char ';'
   return $ AirportSatisfiesPred ap predV
+-}
 
 setVar :: Parsec String st Var
 setVar = pack <$> identifier
@@ -406,6 +408,7 @@ predExpr =
   <|> try isSouthOfPL
   <|> try isEastOfPL
   <|> try isWestOfPL
+  <|> try isNearAirportPL
   <|> try predVarExpr
   <|> try predParensExpr
 
@@ -455,6 +458,7 @@ predOpArgExpr = do
     <|> try isSouthOfPL
     <|> try isEastOfPL
     <|> try isWestOfPL
+    <|> try isNearAirportPL
     <|> try predNotExpr
     <|> try predVarExpr
     <|> try predParensExpr
@@ -470,6 +474,7 @@ predParensExpr = do
 predVar :: Parsec String st Var
 predVar = pack <$> identifier
 
+{-
 isInCountryOld :: Parsec String st (PredExpr Airport)
 isInCountryOld = do
   void $ string "isInCountry"
@@ -479,6 +484,7 @@ isInCountryOld = do
   spaces
   void $ char ')'
   return $ PLit $ Pred $ isInCountry $ pack code
+-}
 
 predLit :: String -> (Text -> Airport -> Bool)
         -> Parsec String st (PredExpr Airport)
@@ -541,6 +547,21 @@ isWestOfPL = do
   void $ char ')'
   return $ PLit $ Pred $ isWestOf lon
 
+isNearAirportPL :: Parsec String AirportMaps (PredExpr Airport)
+isNearAirportPL = do
+  inp <- getInput
+  traceM $ "isNearAirportPL: " ++ inp
+  void $ string "isNearAirport("
+  spaces
+  ap <- airport
+  spaces
+  void $ char ','
+  spaces
+  rad <-intOrFloat
+  spaces
+  void $ char ')'
+  return $PLit $ Pred $ isNearAirport ap rad
+
 intOrFloat :: Parsec String st Double
 intOrFloat = do
   try (do
@@ -550,6 +571,8 @@ intOrFloat = do
     i <- integer
     return $ fromInteger i
     )
+
+    
 
 spaces :: Parsec String st ()
 spaces = skipMany space

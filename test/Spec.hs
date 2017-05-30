@@ -40,9 +40,8 @@ test1 = do
   aps <- loadAirports airportsFp
 
   -- testDistance aps
-
   
-  let p1 = "prog7.txt"
+  let p1 = "prog8.txt"
   putStrLn p1
   readAndExec aps p1
 

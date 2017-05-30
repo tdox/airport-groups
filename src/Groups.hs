@@ -183,8 +183,6 @@ evalSetExpr st (Difference xs ys) =
 evalSetExpr st (SuchThat xs pe) =
   case evalSetExpr st xs of
     Left err -> Left err
---    Right s -> Right S.filter (\x -> (evalPred (evalPredExpr st pe)) x) s
---    Right s -> S.filter <$> \x -> evalPredExpr st pe x <*> s
     Right s -> do
       let ePred :: Either Err (Pred a) = evalPredExpr st pe
       case ePred of
@@ -214,19 +212,18 @@ evalIsElementOf st e (Intersection xs ys) =
   (&&) <$> (S.member e <$> (evalSetExpr st xs))
        <*> (S.member e <$> (evalSetExpr st ys))
 
-
-
 evalIsElementOf st e (Difference xs ys) =
   (&&) <$> (S.member e <$> (evalSetExpr st xs))
        <*> (not <$> (S.member e <$> (evalSetExpr st ys)))
 
-  
 evalIsElementOf st e s = S.member e <$> evalSetExpr st s
+
 
 evalPred :: (Pred a) -> a -> Bool
 evalPred (Pred f) e = f e
 
 
+{-
 
 evalPredExprOld :: Store a -> (PredExpr a) -> (Pred a)
 
@@ -240,7 +237,7 @@ evalPredExprOld st (PVar v) = case M.lookup v st of
 
 evalPredExprOld st (PAnd  p q) =
    Pred (\x -> (&&)  (evalPred (evalPredExprOld st p) x)
-                       (evalPred (evalPredExprOld st q) x))
+                     (evalPred (evalPredExprOld st q) x))
 
 evalPredExprOld st (POr p q) =
   Pred (\e -> ((evalPred (evalPredExprOld st p) e)
@@ -248,7 +245,7 @@ evalPredExprOld st (POr p q) =
 
 evalPredExprOld st (PNot p) =
   Pred (\e -> (not (evalPred (evalPredExprOld st p) e)))
-
+-}
 
 
 
@@ -280,7 +277,7 @@ evalPredExpr st (PNot p) = do
 
 
 
-evalSatisfiesPred :: Store a -> START HERE
+-- evalSatisfiesPred :: Store a -> START HERE
    
 
 execStmt :: forall a. (Show a, Ord a) =>
@@ -322,7 +319,7 @@ execStmt  (out, st) (ElemOf x setExpr) = eOutStore
       Right b -> Right (pack (show b) : out, st)
 
 
-execStmt (out, st) (SatisfiesPred x predExpr) = eOutStore
+-- execStmt (out, st) (SatisfiesPred x predExpr) = eOutStore
 
 
 execProgram outSt [] = Right outSt

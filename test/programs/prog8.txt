@@ -1,0 +1,3 @@
+s1 = {FAA:SEA, FAA:SFO, FAA:SJC, FAA:OAK, FAA:PAO, FAA:LAX, FAA:DEN, FAA:DAL, FAA:MDW, FAA:TEB, FAA:MIA, FAA:SQL};
+s2 = s1 | isNearAirport(FAA:SFO, 50);
+print(s2);
