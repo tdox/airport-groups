@@ -1,0 +1,5 @@
+s1 = allAirports | isInCountry(USA);
+s2 = s1 | isInState(RI);
+print(s2);
+s3 = s1 | isNearAirport(FAA:SFO, 50);
+print(s3);

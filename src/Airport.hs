@@ -51,9 +51,6 @@ data AirportCodes = AirportCodes { acFAA  :: Maybe FAA
                                  , acCAC  :: Maybe CountryAirportCode
                                  } deriving (Eq, Ord, Show)
 
--- data AirportCountryCode = AirportCountryCode CountryCode AirporCode
--- examples "ICAO:KSFO" "CAC:USA/SFO"
-
 data ID a = ID {iD :: Int} deriving (Eq, Ord, Show)
 
 data LatLonDeg = LatLonDeg { lat :: Double
@@ -214,6 +211,7 @@ readUsStateCode txt
 
 --------------------------------------------------------------------------------
 
+{-
 a1 = Airport (ID 1)
              (AirportCodes (Just (FAA "SFO")) Nothing Nothing Nothing)
              "USA"
@@ -226,3 +224,4 @@ a2 = Airport (ID 2)
              (Just ('C', 'A'))
              (LatLonDeg 33.9416 (-118.4085))
              
+-}

@@ -25,8 +25,25 @@ import Text.Parsec.Language (haskellDef)
 -- text
 import Data.Text (Text, pack, unpack)
 
-import Airport
-import Groups
+-- airport
+import Airport (Airport(Airport), AirportCode(FAAac, ICAOac, IATAac)
+               , AirportCode, AirportCodes(AirportCodes), AirportIdMap
+               , AirportMaps(apFaaMap), CountryAirportCode(CAC), FAA(FAA)
+               , ID(ID), IATA(IATA), ICAO(ICAO)
+               , LatLonDeg(LatLonDeg)
+               , iD, apId, isEastOf, isInCountry, isInState, isNearAirport
+               , isNorthOf
+               , isSouthOf
+               , isWestOf, lookup
+               , mkAirportMaps, readUsStateCode)
+       
+import Groups (Program, Pred(Pred)
+              , PredExpr(PAnd, PLit, PNot, POr, PParens, PVar)
+              , SetExpr(Difference, Elems, Intersection, SParens, SVar
+                       , SuchThat, Union)
+              , Stmt(AssignPred, AssignSet, ElemOf, Print), Var
+              , execProgram
+              )
 
 --------------------------------------------------------------------------------
 {-
@@ -142,8 +159,8 @@ prog = do
 
 stmt :: Parsec String AirportMaps (Stmt Airport)
 stmt = do
-  inp <- getInput
-  traceM $ "stmt: inp: " ++ inp
+--  inp <- getInput
+--  traceM $ "stmt: inp: " ++ inp
   spaces
   st <- stmtTxt
 --  spaces
@@ -163,8 +180,8 @@ stmtTxt =
 
 setAssignStmt :: Parsec String AirportMaps (Stmt Airport)
 setAssignStmt = do
-  inp <- getInput
-  traceM $ "setAssignStmt: inp: " ++ inp
+--  inp <- getInput
+--  traceM $ "setAssignStmt: inp: " ++ inp
   var <- setVar
   spaces
   void $ char '='
@@ -237,8 +254,8 @@ setVar = pack <$> identifier
 
 setExpr :: Parsec String AirportMaps (SetExpr Airport)
 setExpr = do
-     inp <- getInput
-     traceM $ "setExpr: inp: " ++ inp
+--     inp <- getInput
+--     traceM $ "setExpr: inp: " ++ inp
      try setUnionExpr
       <|> try setIntersectionExpr
 --  <|> try setDifferenceExpr
@@ -250,8 +267,8 @@ setExpr = do
 
 setOpArgExpr :: Parsec String AirportMaps (SetExpr Airport)
 setOpArgExpr = do
-  inp <- getInput
-  traceM $ "setOpArgExpr: inp: " ++ inp
+--  inp <- getInput
+--  traceM $ "setOpArgExpr: inp: " ++ inp
   try setVarExpr
   <|> try setAirportsExpr
   <|> try setParensExpr
@@ -269,28 +286,18 @@ setAirportsExpr = (Elems . fromList) <$> airports
 
 setParensExpr :: Parsec String AirportMaps (SetExpr Airport)
 setParensExpr = do
-  inp <-getInput
-  traceM $ "setParensExpr: " ++ inp
+--  inp <-getInput
+--  traceM $ "setParensExpr: " ++ inp
   se <- parens setExpr
   return $ SParens se
   
-  {-
-  void $ char '('
-  spaces
-  s <- setExpr
-  spaces
-  void $ char ')'
-  return s
-  -}
 
 setUnionExpr :: Parsec String AirportMaps (SetExpr Airport)
 setUnionExpr = do
---  s1 <- setExpr
   s1 <- setOpArgExpr
   spaces
   union
   spaces
---  s2 <- setExpr
   s2 <- setOpArgExpr
   return $ Union s1 s2
 
@@ -363,8 +370,8 @@ airport = do
 
 airportIdentifier :: Parsec String st AirportCode
 airportIdentifier = do
-  inp <- getInput
-  traceM $ "airportIdentifier: inp: " ++ inp
+--  inp <- getInput
+--  traceM $ "airportIdentifier: inp: " ++ inp
   try (do
     faa <- faaIdentifier
     return $ FAAac faa)
@@ -378,8 +385,8 @@ airportIdentifier = do
 
 faaIdentifier :: Parsec String st FAA
 faaIdentifier = do
-  inp <- getInput
-  traceM $ "faaIdentifier: inp: " ++ inp
+--  inp <- getInput
+--  traceM $ "faaIdentifier: inp: " ++ inp
   string "FAA:"
   code <- many1 letter
   return $ FAA $ pack code
@@ -438,8 +445,8 @@ predOrExpr = do
 
 predNotExpr :: Parsec String AirportMaps (PredExpr Airport)
 predNotExpr = do
-  inp <- getInput
-  traceM $ "predNotExpr: inp: " ++ inp
+--  inp <- getInput
+--  traceM $ "predNotExpr: inp: " ++ inp
   void $ char '!'
   spaces
   p <- predOpArgExpr
@@ -450,8 +457,8 @@ suchThatPredArgExpr = predExpr
 
 predOpArgExpr :: Parsec String AirportMaps (PredExpr Airport)
 predOpArgExpr = do
-  inp <- getInput
-  traceM $ "predOpArgExpr: inp: " ++ inp
+--  inp <- getInput
+--  traceM $ "predOpArgExpr: inp: " ++ inp
   try isInCountryPL
     <|> try isInStatePL
     <|> try isNorthOfPL
@@ -465,8 +472,8 @@ predOpArgExpr = do
 
 predParensExpr :: Parsec String AirportMaps (PredExpr Airport)
 predParensExpr = do
-  inp <-getInput
-  traceM $ "predParensExpr: " ++ inp
+--  inp <-getInput
+--  traceM $ "predParensExpr: " ++ inp
   ex <- parens predExpr
   return $ PParens ex
 
@@ -474,17 +481,6 @@ predParensExpr = do
 predVar :: Parsec String st Var
 predVar = pack <$> identifier
 
-{-
-isInCountryOld :: Parsec String st (PredExpr Airport)
-isInCountryOld = do
-  void $ string "isInCountry"
-  void $ char '('
-  spaces
-  code <- many1 letter
-  spaces
-  void $ char ')'
-  return $ PLit $ Pred $ isInCountry $ pack code
--}
 
 predLit :: String -> (Text -> Airport -> Bool)
         -> Parsec String st (PredExpr Airport)
@@ -505,8 +501,8 @@ isInStatePL  = predLit "isInState" isInState
 
 isNorthOfPL :: Parsec String st (PredExpr Airport)
 isNorthOfPL = do
-  inp <- getInput
-  traceM $ "isNorthOfPL: " ++ inp
+--  inp <- getInput
+--  traceM $ "isNorthOfPL: " ++ inp
   void $ string "isNorthOf("
   spaces
   lat <- intOrFloat
@@ -516,8 +512,8 @@ isNorthOfPL = do
 
 isSouthOfPL :: Parsec String st (PredExpr Airport)
 isSouthOfPL = do
-  inp <- getInput
-  traceM $ "isSouthOfPL: " ++ inp
+--  inp <- getInput
+--  traceM $ "isSouthOfPL: " ++ inp
   void $ string "isSouthOf("
   spaces
   lat <- intOrFloat
@@ -527,8 +523,8 @@ isSouthOfPL = do
 
 isEastOfPL :: Parsec String st (PredExpr Airport)
 isEastOfPL = do
-  inp <- getInput
-  traceM $ "isEastOfPL: " ++ inp
+--  inp <- getInput
+--  traceM $ "isEastOfPL: " ++ inp
   void $ string "isEastOf("
   spaces
   lon <- intOrFloat
@@ -538,8 +534,8 @@ isEastOfPL = do
 
 isWestOfPL :: Parsec String st (PredExpr Airport)
 isWestOfPL = do
-  inp <- getInput
-  traceM $ "isWestOfPL: " ++ inp
+--  inp <- getInput
+--  traceM $ "isWestOfPL: " ++ inp
   void $ string "isWestOf("
   spaces
   lon <- intOrFloat
@@ -549,8 +545,8 @@ isWestOfPL = do
 
 isNearAirportPL :: Parsec String AirportMaps (PredExpr Airport)
 isNearAirportPL = do
-  inp <- getInput
-  traceM $ "isNearAirportPL: " ++ inp
+--  inp <- getInput
+--  traceM $ "isNearAirportPL: " ++ inp
   void $ string "isNearAirport("
   spaces
   ap <- airport

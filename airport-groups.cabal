@@ -7,7 +7,7 @@ license:             BSD3
 license-file:        LICENSE
 author:              Author name here
 maintainer:          example@example.com
-copyright:           2017 Author name here
+copyright:           2017 Tad Doxsee
 category:            Web
 build-type:          Simple
 extra-source-files:  README.md
@@ -15,7 +15,7 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     AirportGroups,
+  exposed-modules:     Airport,
                        Groups,
                        Parser
                        
@@ -29,7 +29,7 @@ library
 executable airport-groups-exe
   hs-source-dirs:      app
   main-is:             Main.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -O2
   build-depends:       base
   default-language:    Haskell2010
 
@@ -39,7 +39,10 @@ test-suite airport-groups-test
   main-is:             Spec.hs
   build-depends:       base
                      , airport-groups
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+                     , containers
+                     , parsec
+                     , text
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -O2
   default-language:    Haskell2010
 
 source-repository head

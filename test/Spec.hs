@@ -8,6 +8,8 @@ import Data.IntMap (IntMap)
 import qualified Data.IntMap as IM
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Set (Set)
+import qualified Data.Set as S
 
 -- parsec
 import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, getState
@@ -22,7 +24,7 @@ import Airport (Airport, AirportMaps, AirportCode(FAAac, IATAac), FAA(FAA)
        
 import qualified Airport as AP
        
-import Groups (Program, execProgram)
+import Groups (Program, Val(SetVal), Store, execProgram)
 import Parser (loadAirports, prog)
 
 
@@ -35,14 +37,15 @@ main = do
 test1 :: IO ()
 test1 = do
   let
-    airportsFp = "./misc/airports_dev.txt"
+    -- airportsFp = "./misc/airports_dev.txt"
+    airportsFp = "./misc/airports_stg.txt"
     
   aps <- loadAirports airportsFp
 
   -- testDistance aps
   
-  let p1 = "prog8.txt"
-  putStrLn p1
+  let p1 = "prog9.txt"
+--  putStrLn p1
   readAndExec aps p1
 
 
@@ -52,38 +55,41 @@ readAndExec aps progName = do
   let programFp = "./test/programs/" ++ progName
 
   progStr <- readFile programFp
-  putStrLn $ "progamFp:"
-  putStrLn progStr
+--  putStrLn $ "progamFp:"
+--  putStrLn progStr
 
   let
     ep1 :: Either ParseError (Program Airport)
     ep1 = runParser prog aps programFp progStr
 
-  putStrLn "ep1:"
-  print ep1
+--  putStrLn "ep1:"
+--  print ep1
 
   let
+
+    allAirportsSet :: Set Airport
+    allAirportsSet = S.fromList $ map snd $ IM.toList $ AP.apIdMap aps
+
+    store0 :: Store Airport
+    store0 = M.singleton "allAirports" (SetVal allAirportsSet)
+    
     output :: [Text]
     output = case ep1 of
       Left err -> [pack $ show err]
-      Right p1 -> case execProgram ([], M.empty) p1 of
+      -- Right p1 -> case execProgram ([], M.empty) p1 of
+      Right p1 -> case execProgram ([], store0) p1 of
         Left err -> [err]
         Right (out, _) -> out
 
-  putStrLn $ "nLines: " ++ show (length output)
+--  putStrLn $ "nLines: " ++ show (length output)
   forM_ output (putStrLn . unpack)
    
-  putStrLn "done"
+--  putStrLn "done"
 
 
 testDistance :: AirportMaps -> IO () 
 testDistance aps = do
   let
-    {-
-    Just sfo = AP.lookup (FAAac (FAA "SFO")) aps
-    Just teb = AP.lookup (FAAac (FAA "TEB")) aps
-    Just sjo = AP.lookup (FAAac (FAA "SJO")) aps
--}
     [sfo, teb, sjc] = map (getAirport aps) ["SFO", "TEB", "SJC"]
 
     Just nrt = AP.lookup (IATAac (IATA "NRT")) aps
