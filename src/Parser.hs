@@ -1,37 +1,35 @@
+-- {-# OPTIONS_GHC -Wall #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Parser where
 
 
 -- base
-import Control.Monad (foldM, forM_, void, when)
-import Data.Char (isSpace)
-import Data.Maybe (fromMaybe, maybe)
-import Debug.Trace
+import Control.Monad (void)
+-- import Debug.Trace
 
 -- containers
 import Data.Set (fromList)
 import qualified Data.IntMap as IM
-import qualified Data.Map as M
 
 -- parsec
-import Text.Parsec (Parsec, ParseError, (<|>), (<?>), char, endBy1, getInput
-                   , getState, letter, many, many1, parse, parseTest, runParser
+import Text.Parsec (Parsec, (<|>), char, getInput
+                   , getState, letter, many1
                    , skipMany, space, string, try, unexpected)
 
 import qualified Text.Parsec.Token as P
 import Text.Parsec.Language (haskellDef)
 
 -- text
-import Data.Text (Text, pack, unpack)
+import Data.Text (Text, pack)
 
 -- airport
 import Airport (Airport(Airport), AirportCode(FAAac, ICAOac, IATAac)
                , AirportCode, AirportCodes(AirportCodes), AirportIdMap
-               , AirportMaps(apFaaMap), CountryAirportCode(CAC), FAA(FAA)
+               , AirportMaps, FAA(FAA)
                , ID(ID), IATA(IATA), ICAO(ICAO)
                , LatLonDeg(LatLonDeg)
-               , iD, apId, isEastOf, isInCountry, isInState, isNearAirport
+               , isEastOf, isInCountry, isInState, isNearAirport
                , isNorthOf
                , isSouthOf
                , isWestOf, lookup
@@ -42,7 +40,6 @@ import Groups (Program, Pred(Pred)
               , SetExpr(Difference, Elems, Intersection, SParens, SVar
                        , SuchThat, Union)
               , Stmt(AssignPred, AssignSet, ElemOf, Print), Var
-              , execProgram
               )
 
 --------------------------------------------------------------------------------
@@ -258,7 +255,7 @@ setExpr = do
 --     traceM $ "setExpr: inp: " ++ inp
      try setUnionExpr
       <|> try setIntersectionExpr
---  <|> try setDifferenceExpr
+      <|> try setDifferenceExpr
       <|> try setSuchThatExpr
       <|> try setVarExpr
       <|> try setAirportsExpr
@@ -318,11 +315,11 @@ intersection = void $ char '^'
 
 setDifferenceExpr :: Parsec String AirportMaps (SetExpr Airport)
 setDifferenceExpr = do
-  s1 <- setExpr
+  s1 <- setOpArgExpr
   spaces
   difference
   spaces
-  s2 <- setExpr
+  s2 <- setOpArgExpr
   return $ Difference s1 s2
 
 difference :: Parsec String AirportMaps ()
@@ -361,7 +358,7 @@ airport = do
 
   case mAirport of
     Nothing -> unexpected "unknown airport"
-    Just airport -> return airport
+    Just ap -> return ap
 
 
 --set :: Parsec String AirportMaps (SetVar Airport)
@@ -387,19 +384,19 @@ faaIdentifier :: Parsec String st FAA
 faaIdentifier = do
 --  inp <- getInput
 --  traceM $ "faaIdentifier: inp: " ++ inp
-  string "FAA:"
+  void $ string "FAA:"
   code <- many1 letter
   return $ FAA $ pack code
 
 icaoIdentifier :: Parsec String st ICAO
 icaoIdentifier = do
-  string "ICAO:"
+  void $ string "ICAO:"
   code <- many1 letter
   return $ ICAO $ pack code
 
 iataIdentifier :: Parsec String st IATA
 iataIdentifier = do
-  string "IATA:"
+  void $ string "IATA:"
   code <- many1 letter
   return $ IATA $ pack code
 
@@ -573,7 +570,9 @@ intOrFloat = do
 spaces :: Parsec String st ()
 spaces = skipMany space
 
+lexer :: P.TokenParser st
 lexer = P.makeTokenParser haskellDef
+
 commaSep1 = P.commaSep1 lexer
 braces = P.braces lexer
 identifier = P.identifier lexer
@@ -625,88 +624,3 @@ fromNullStr str0 = case str0 of
   str -> Just $ pack str
     
 --------------------------------------------------------------------------------
-
-test1 :: IO ()
-test1 = do
-  parseTest faaIdentifier "FAA:SFO"
-  parseTest icaoIdentifier "ICAO:KSFO"
-  parseTest airportIdentifier "FAA:SFO"
-  parseTest airportIdentifier "ICAO:KSFO"
-  parseTest airportIdentifier "IATA:YSFO"
-  parseTest airportIdentifiers {- $ stripSpaces -} "ICAO:KSFO, FAA:LAX"
-  parseTest airportIdentifierList {- $ stripSpaces -} "{ICAO:KSFO, FAA:LAX}"
-  parseTest setVar "s1_"
-  parseTest setExprCode "s1_"
-  parseTest setExprCode {- $ stripSpaces -} "{ICAO:KSFO}"
-  parseTest setExprCode {- $ stripSpaces -} "{ICAO:KSFO, FAA:LAX}"
-  --parseTest setAssignStmt $ stripSpaces "s1 = {ICAO:KSFO, FAA:LAX}"
-  --parseTest prog $ stripSpaces "s1 = {ICAO:KSFO, FAA:LAX} ; s2 = {IATA:XYZ}"
-
-testLoadAirports :: IO ()
-testLoadAirports = do
-  let fp = "../misc/airports_dev.txt"
-  maps <- loadAirports fp
-  let faas = apFaaMap maps
-  forM_ (take 10 (M.toList faas)) print
-  
-
-mkTestAirportIdMap :: AirportIdMap
-mkTestAirportIdMap = foldr (\ap -> IM.insert (iD (apId ap)) ap) IM.empty as
-  where
-    a1 = Airport (ID 1)
-             (AirportCodes (Just (FAA "SFO")) Nothing Nothing Nothing)
-             "USA"
-             (Just ('C', 'A'))
-             (LatLonDeg 33.7749 (-122.4194))
-  
-    a2 = Airport (ID 2)
-             (AirportCodes (Just (FAA "LAX"))
-                           Nothing Nothing  (Just (CAC "USA" "LAX")))
-             "USA"
-             (Just ('C', 'A'))
-             (LatLonDeg 33.9416 (-118.4085))
-
-    as = [a1, a2]
-             
-
-
-mkTestAirportMaps :: AirportMaps
-mkTestAirportMaps = mkAirportMaps mkTestAirportIdMap
-
-
-
-
-
-test2 :: IO ()
-test2 = do
-  let
-    pStr1 = {- stripSpaces -} "s1 = {ICAO:KSFO}; print(s1)" --  ; s2 = {ICAO:KMDW}"
-    fp = "./misc/airports_stg.txt"
-
-  putStr "loading airports ..."
-  aps <- loadAirports fp
-  putStrLn " loaded"
-
-  let
-    ep1 :: Either ParseError (Program Airport)
-    ep1 = runParser prog aps "dummySrc" pStr1
-
-  -- print ep1
-
-  let
-    output :: [Text]
-    output = case ep1 of
-      Left err -> [pack $ show err]
-      Right p1 -> case execProgram ([], M.empty) p1 of
-        Left err -> [err]
-        Right (out, _) -> out
-
-  putStrLn $ "output:"
-
-  forM_ output (putStrLn . unpack)
-   
-  putStrLn "done"
-
-
---------------------------------------------------------------------------------
-

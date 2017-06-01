@@ -1,0 +1,8 @@
+s1 = {FAA:SFO, FAA:LAX, FAA:SJC, FAA:TEB};
+print(s1);
+s2 = {FAA:JFK, FAA:SFO, FAA:LAX, FAA:MIA, FAA:MDW};
+print(s2);
+s3 = s1 - s2;
+print(s3);
+s4 = s2 - s1;
+print(s4);
