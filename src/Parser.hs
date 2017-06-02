@@ -9,12 +9,14 @@ import Control.Monad (void)
 -- import Debug.Trace
 
 -- containers
-import Data.Set (fromList)
 import qualified Data.IntMap as IM
+import qualified Data.Map as M
+import Data.Set (Set, fromList)
+import qualified Data.Set as S
 
 -- parsec
-import Text.Parsec (Parsec, (<|>), char, getInput
-                   , getState, letter, many1
+import Text.Parsec (Parsec, ParseError, (<|>), char, getInput
+                   , getState, letter, many1, runParser
                    , skipMany, space, string, try, unexpected)
 
 import qualified Text.Parsec.Token as P
@@ -29,7 +31,7 @@ import Airport (Airport(Airport), AirportCode(FAAac, ICAOac, IATAac)
                , AirportMaps, FAA(FAA)
                , ID(ID), IATA(IATA), ICAO(ICAO)
                , LatLonDeg(LatLonDeg)
-               , isEastOf, isInCountry, isInState, isNearAirport
+               , apIdMap, isEastOf, isInCountry, isInState, isNearAirport
                , isNorthOf
                , isSouthOf
                , isWestOf, lookup
@@ -39,7 +41,9 @@ import Groups (Program, Pred(Pred)
               , PredExpr(PAnd, PLit, PNot, POr, PParens, PVar)
               , SetExpr(Difference, Elems, Intersection, SParens, SVar
                        , SuchThat, Union)
-              , Stmt(AssignPred, AssignSet, ElemOf, Print), Var
+              , Store
+              , Stmt(AssignPred, AssignSet, ElemOf, Print), Val(SetVal), Var
+              , execProgram
               )
 
 --------------------------------------------------------------------------------
@@ -589,8 +593,6 @@ loadAirports fp = do
   lns <- lines <$> readFile fp
   let idMap = foldr insertAirport IM.empty $ tail lns
   return $ mkAirportMaps idMap
-
-  
   
   
 insertAirport :: String -> AirportIdMap -> AirportIdMap
@@ -622,5 +624,31 @@ fromNullStr :: String -> Maybe Text
 fromNullStr str0 = case str0 of
   "NULL" -> Nothing
   str -> Just $ pack str
+
+
+-- initalizie the store with the "allAirports" variable equal to the set
+-- of all of airports
+mkInitialAirportStore :: AirportMaps -> Store Airport
+mkInitialAirportStore aps = M.singleton "allAirports" (SetVal allAirportsSet)
+  where
+    allAirportsSet = S.fromList $ map snd $ IM.toList $ apIdMap aps
+
+
+compileAndRunProgram :: String -> String -> AirportMaps -> [Text]
+compileAndRunProgram programFp progStr aps = reverse output
+  where
+    ep1 :: Either ParseError (Program Airport)
+    ep1 = runParser prog aps programFp progStr
+
+    store0 = mkInitialAirportStore aps
+    
+    output :: [Text]
+    output = case ep1 of
+      Left err -> [pack $ show err]
+      Right p1 -> case execProgram ([], store0) p1 of
+        Left err -> [err]
+        Right (out, _) -> out
+
+
     
 --------------------------------------------------------------------------------

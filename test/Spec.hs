@@ -25,7 +25,7 @@ import Airport (Airport, AirportMaps, AirportCode(FAAac, IATAac), FAA(FAA)
 import qualified Airport as AP
        
 import Groups (Program, Val(SetVal), Store, execProgram)
-import Parser (loadAirports, prog)
+import Parser (loadAirports, compileAndRunProgram, mkInitialAirportStore, prog)
 
 
 
@@ -51,41 +51,18 @@ test1 = do
 
 readAndExec :: AirportMaps -> String -> IO ()
 readAndExec aps progName = do
-
   let programFp = "./test/programs/" ++ progName
-
   progStr <- readFile programFp
-  --putStrLn $ "progamFp:"
-  --putStrLn progStr
-
-  let
-    ep1 :: Either ParseError (Program Airport)
-    ep1 = runParser prog aps programFp progStr
-
---  putStrLn "ep1:"
---  print ep1
-
-  let
-
-    allAirportsSet :: Set Airport
-    allAirportsSet = S.fromList $ map snd $ IM.toList $ AP.apIdMap aps
-
-    -- initalizie the store with the "allAirports" variable equal to the set
-    -- of all of airports
-    store0 :: Store Airport
-    store0 = M.singleton "allAirports" (SetVal allAirportsSet)
-    
-    output :: [Text]
-    output = case ep1 of
-      Left err -> [pack $ show err]
-      Right p1 -> case execProgram ([], store0) p1 of
-        Left err -> [err]
-        Right (out, _) -> out
-
---  putStrLn $ "nLines: " ++ show (length output)
-  forM_ (reverse output) (putStrLn . unpack)
+  let output = compileAndRunProgram programFp progStr aps
+  forM_ output (putStrLn . unpack)
    
 --  putStrLn "done"
+
+
+getAirport :: AirportMaps -> Text -> Airport
+getAirport aps faa = ap
+  where
+    Just ap = AP.lookup (FAAac (FAA faa)) aps
 
 
 testDistance :: AirportMaps -> IO () 
@@ -103,9 +80,3 @@ testDistance aps = do
   putStrLn $ "sfo - sjc: " ++ show d2
   putStrLn $ "sfo - nrt: " ++ show d3
 
-
-
-getAirport :: AirportMaps -> Text -> Airport
-getAirport aps faa = ap
-  where
-    Just ap = AP.lookup (FAAac (FAA faa)) aps

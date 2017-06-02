@@ -84,7 +84,6 @@ data AirportMaps = AirportMaps { apIdMap   :: AirportIdMap
 --------------------------------------------------------------------------------
 
 
-
 showAirportCodes :: AirportCodes -> String
 showAirportCodes codes = case mStr of
   Just str -> str
