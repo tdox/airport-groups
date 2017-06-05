@@ -1,11 +1,23 @@
-import Html exposing (Html, Attribute, button, div, h1, input, p, text, textarea)
+import Html exposing (Html, Attribute, br, button, div, h1, input, p, text, textarea)
 import Html.Events exposing (onClick, onInput)
-import Html.Attributes exposing (..)
+import Html.Attributes exposing (disabled, placeholder, style)
+import Http exposing (Body, jsonBody)
+import Json.Decode exposing (Decoder, field, list, string)
+
 -- import Http
+
+type alias SourceCode = {src : String}
+type alias ProgOutput = {out : List String}
 
 
 main =
-  Html.beginnerProgram { model = model, view = view, update = update }
+  Html.program
+      { init = init "" ""
+      , view = view
+      , update = update
+      , subscriptions = subscriptions
+      }
+--  Html.beginnerProgram { model = model, view = view, update = update }
 
 
 -- MODEL
@@ -15,11 +27,22 @@ type alias Model =
   , output : String
   }
 
+    
+init : String -> String -> (Model, Cmd Msg)
+       
+init initSrc initOutput =
+    ( Model initSrc initOutput
+    , Cmd.none
+    )
+
+
+    {-
 model : Model
 model =
   { src = ""
   , output = ""
   }
+-}
 
 
 -- UPDATE
@@ -27,16 +50,29 @@ model =
 type Msg =
     Run
   | SaveSrc String
---  | NewOutput (Result Http.Error String)
+  | NewOutput (Result Http.Error ProgOutput)
 
-update : Msg -> Model -> Model
+ 
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
       SaveSrc newSrc ->
-        { model | src = newSrc}
+        ({ model | src = newSrc}, Cmd.none)
           
+--      Run  ->
+--        { model | output = model.src}
+
       Run  ->
-        { model | output = model.src}
+        (model, runProgram model.src)
+            
+      NewOutput (Err _) ->
+          ( model, Cmd.none)
+--          ( {model | output = err}, Cmd.none)
+
+      NewOutput (Ok out) ->
+          ( {model | output = String.concat out.out}, Cmd.none)
+              
+          
 
 
 -- VIEW
@@ -49,9 +85,9 @@ view model =
 --      input [ placeholder "Enter group definitions here", onInput Interpret ]  []
       h1 [h1Style] [text "Airport Groups"]
     , textarea [ srcStyle, placeholder "Enter group definitions here", onInput SaveSrc ]  []
-    , p [] []
+    , br [] []
     , button [ style [fontSize], onClick Run ] [ text "Run" ]
-    , p [] []
+    , br [] []
     , textarea [outStyle, disabled True] [ text model.output]
     -- , div [textStyle] [ text model.output]
     --, button [ onClick Increment ] [ text "+" ]
@@ -66,7 +102,35 @@ view model =
 -- placeholder : String -> Attribute msg
 -- style : List (String, String) -> Attribute msg
 
+-- SUBSCRIPTIONS
 
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  Sub.none
+
+-- HTTP
+
+
+mkSourceCode : String -> SourceCode
+mkSourceCode src = SourceCode src
+
+mkBody : String -> Body
+mkBody src = jsonBody (mkSourceCode src)
+
+progOutputDecoder : Decoder ProgOutput
+progOutputDecoder = ProgOutput (field "out" (list string))
+
+
+runProgram : String -> Cmd Msg
+runProgram src =
+    let
+        url = "http://localhost:8080/airport-group"
+    in
+        Http.send NewOutput (Http.post url (mkBody src) progOutputDecoder)
+
+-- send : (Result Error a -> msg) -> Request a -> Cmd msg
+-- post : 
+      
 -- Styles
 
 srcStyle : Attribute msg
