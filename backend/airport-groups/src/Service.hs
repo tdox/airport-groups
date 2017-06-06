@@ -21,7 +21,7 @@ import Data.Aeson (FromJSON, ToJSON)
 
 -- servant
 import Servant.API ((:>), (:<|>)(..), Capture, Get, JSON, PlainText, Post, QueryParam,
-                    ReqBody)
+                    ReqBody, StdMethod(OPTIONS), Verb)
        
 -- servant-server
 import Servant.Server (Handler, Server, serve, errBody, err400)
@@ -54,6 +54,7 @@ instance ToJSON ProgOutput
 
 type AirportGroupAPI =
   "airport-group" :> ReqBody '[JSON] SourceCode :> Post '[JSON] ProgOutput
+--  :<|> "airport-group" :> ReqBody '[JSON] SourceCode :> (Verb 'OPTIONS 405) '[PlainText] ()
   -- "airport-groups" :> ReqBody '[String] String :> Post '[Text] [Text]
   -- "airport-groups" :> ReqBody '[JSON] (Program Airport) :> Post '[JSON] ()
 
@@ -67,11 +68,14 @@ compileRun aps (SourceCode txt) = do
   let o = compileAndRunProgram "" (unpack txt) aps :: [Text]
   return $ ProgOutput o
 
+options :: AirportMaps -> SourceCode -> Handler ()
+options _ _ = return ()
+
 --------------------------------------------------------------------------------
 -- server (built with servant + wai + warp)
 
 airportGroupServer :: AirportMaps -> Server AirportGroupAPI
-airportGroupServer aps = compileRun aps
+airportGroupServer aps = compileRun aps -- :<|> options aps
 --  where
   --  x = compileRun aps :: _
 
@@ -105,3 +109,8 @@ service = do
   putStrLn $ "airport-group-service running on " ++ show port
 --  putStrLn $ "View the API docs with swagger-ui at http://<SERVER>:" ++ (show port) ++ "/swagger.json"
   run port $ app aps
+
+-- TODO TD 6/6/17 add
+-- run port $ cors (const $ Just policy) $ app aps
+-- where policy = simpleCorsResourcePolicy { corsRequestHeaders = ["Content-Type"] }
+-- See: https://github.com/haskell-servant/servant-swagger/issues/45

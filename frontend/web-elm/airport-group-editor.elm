@@ -2,7 +2,9 @@ import Html exposing (Html, Attribute, br, button, div, h1, input, p, text, text
 import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (disabled, placeholder, style)
 import Http exposing (Body, jsonBody)
-import Json.Decode exposing (Decoder, field, list, string)
+import Json.Decode exposing (Decoder, decodeString, field, list, map, string)
+import Json.Encode exposing (Value)
+import Debug exposing (log)
 
 -- import Http
 
@@ -65,9 +67,9 @@ update msg model =
       Run  ->
         (model, runProgram model.src)
             
-      NewOutput (Err _) ->
-          ( model, Cmd.none)
---          ( {model | output = err}, Cmd.none)
+      NewOutput (Err err) ->
+--          ( model, Cmd.none)
+          ( {model | output = toString err}, Cmd.none)
 
       NewOutput (Ok out) ->
           ( {model | output = String.concat out.out}, Cmd.none)
@@ -114,19 +116,27 @@ subscriptions model =
 mkSourceCode : String -> SourceCode
 mkSourceCode src = SourceCode src
 
+encodeSourceCode : SourceCode -> Value
+encodeSourceCode sc  = Json.Encode.string sc.src
+
 mkBody : String -> Body
-mkBody src = jsonBody (mkSourceCode src)
+mkBody src = jsonBody (encodeSourceCode (mkSourceCode src))
 
 progOutputDecoder : Decoder ProgOutput
-progOutputDecoder = ProgOutput (field "out" (list string))
+progOutputDecoder = map ProgOutput (field "out" (list string))
+--progOutputDecoder = decodeString (field "out" (list string))
+--progOutputDecoder = ProgOutput (field "out" (list string))
 
 
 runProgram : String -> Cmd Msg
 runProgram src =
     let
         url = "http://localhost:8080/airport-group"
+        req = Http.post url (mkBody src) progOutputDecoder
+        reqStr = log "req" req
     in
-        Http.send NewOutput (Http.post url (mkBody src) progOutputDecoder)
+        Http.send NewOutput req
+--        Http.send NewOutput (Http.post url (mkBody src) progOutputDecoder)
 
 -- send : (Result Error a -> msg) -> Request a -> Cmd msg
 -- post : 
