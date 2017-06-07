@@ -14,3 +14,21 @@ la = ca | isNearAirport(FAA:LAX, 50);
 print(la);
 
 -------------
+
+p1 = isInCountry(USA);
+g1 = {FAA:SFO, ICAO:SAEZ, ICAO:EGLL};
+print(g1);
+g2 = g1 | p1;
+print(g2);
+ca = allAirports | isInState(CA);
+la = ca | isNearAirport(FAA:LAX, 10);
+print(la);
+us = allAirports | isInCountry(USA);
+ny = us | isInState(NY);
+nearTEB = isNearAirport(FAA:TEB, 10);
+teb = ny | nearTEB;
+print(teb);
+nearLAX = isNearAirport(FAA:LAX, 10);
+bases = us | (nearTEB || nearLAX);
+print(bases);
+airportIsInSet(FAA:SMO, bases);
