@@ -3,7 +3,7 @@ import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (disabled, placeholder, style)
 import Http exposing (Body, jsonBody)
 import Json.Decode exposing (Decoder, decodeString, field, list, map, string)
-import Json.Encode exposing (Value)
+import Json.Encode exposing (Value, object, string)
 import Debug exposing (log)
 
 -- import Http
@@ -72,7 +72,7 @@ update msg model =
           ( {model | output = toString err}, Cmd.none)
 
       NewOutput (Ok out) ->
-          ( {model | output = String.concat out.out}, Cmd.none)
+          ( {model | output = String.concat(List.intersperse "\n" out.out)}, Cmd.none)
               
           
 
@@ -87,9 +87,9 @@ view model =
 --      input [ placeholder "Enter group definitions here", onInput Interpret ]  []
       h1 [h1Style] [text "Airport Groups"]
     , textarea [ srcStyle, placeholder "Enter group definitions here", onInput SaveSrc ]  []
-    , br [] []
+    , p [] []
     , button [ style [fontSize], onClick Run ] [ text "Run" ]
-    , br [] []
+    , p [] []
     , textarea [outStyle, disabled True] [ text model.output]
     -- , div [textStyle] [ text model.output]
     --, button [ onClick Increment ] [ text "+" ]
@@ -117,13 +117,14 @@ mkSourceCode : String -> SourceCode
 mkSourceCode src = SourceCode src
 
 encodeSourceCode : SourceCode -> Value
-encodeSourceCode sc  = Json.Encode.string sc.src
+encodeSourceCode sc  = object [("src", Json.Encode.string sc.src)]
+--encodeSourceCode sc  = Json.Encode.string sc.src
 
 mkBody : String -> Body
 mkBody src = jsonBody (encodeSourceCode (mkSourceCode src))
 
 progOutputDecoder : Decoder ProgOutput
-progOutputDecoder = map ProgOutput (field "out" (list string))
+progOutputDecoder = map ProgOutput (field "out" (Json.Decode.list Json.Decode.string))
 --progOutputDecoder = decodeString (field "out" (list string))
 --progOutputDecoder = ProgOutput (field "out" (list string))
 

@@ -8,7 +8,7 @@
 module Service where
 
 import Airport
-import Groups
+--import Groups
 import Parser
 
 -- base
@@ -35,6 +35,10 @@ import Control.Monad.IO.Class (liftIO)
 
 -- wai
 import Network.Wai (Application)
+
+-- wai-cors
+import Network.Wai.Middleware.Cors (CorsResourcePolicy(corsRequestHeaders)
+                                   , cors, simpleCorsResourcePolicy)
 
 -- warp
 import Network.Wai.Handler.Warp (run)
@@ -99,7 +103,7 @@ service = do
 --  writeSwaggerJSON -- should really be in a separate main
   let
     port = 8080
-    airportsFp = "./misc/airports_dev.txt"
+    airportsFp = "./misc/airports_stg.txt"
 
   putStr "loading airports..."
   aps <- loadAirports airportsFp
@@ -108,9 +112,8 @@ service = do
 --  planes <- emptyTableIO
   putStrLn $ "airport-group-service running on " ++ show port
 --  putStrLn $ "View the API docs with swagger-ui at http://<SERVER>:" ++ (show port) ++ "/swagger.json"
-  run port $ app aps
+--  run port $ app aps
 
--- TODO TD 6/6/17 add
--- run port $ cors (const $ Just policy) $ app aps
--- where policy = simpleCorsResourcePolicy { corsRequestHeaders = ["Content-Type"] }
+  run port $ cors (const $ Just policy) $ app aps
+    where policy = simpleCorsResourcePolicy { corsRequestHeaders = ["Content-Type"] }
 -- See: https://github.com/haskell-servant/servant-swagger/issues/45

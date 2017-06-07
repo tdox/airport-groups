@@ -1,0 +1,31 @@
+
+Set Assignment:
+
+  set1 = {FAA:SFO, FAA:TEB, FAA:LAX}
+
+
+Set Operators
+
+ union:      +
+ intersect:  ^
+ difference: -
+
+
+Predicate Functions
+
+  isInState(state-code)
+  isInCountry(country-code)
+  isNorthOf(degrees-lattitude)
+  isSouthOf(degrees-lattitude)
+  isEastOf(degrees-longitude)
+  isWestOf(degrees-longitude)
+  isNearAirport(airport-code, miles)
+
+Predicate Operators
+  and: &&
+  or:  ||
+  not: !
+
+Set | Predicate Operator
+  such-that: |
+

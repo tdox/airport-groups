@@ -109,10 +109,10 @@ import Groups (Program, Pred(Pred)
               | "isInState(" <state-code> ")"
               | "isInCountry(" <country-code> ")"
               | "isNearInMiles(" <airport-identifier> "," <float> ")"
-              | "isNorthOfLatitudeDegs(" <float> ")"
-              | "isSouthOfLatitudeDegs(" <float> ")"
-              | "isSouthOfLatitudeDegs(" <float> ")"
-              | "isBetweenLongitudesDegs(" <float> "," <float> ")"
+              | "isNorthOf(" <float> ")"
+              | "isSouthOf(" <float> ")"
+              | "isEastOf(" <float> ")"
+              | "isWestOf(" <float> "," <float> ")"
 
 <pred-op> ::= <and> | <or>
 <and> ::= "&&"

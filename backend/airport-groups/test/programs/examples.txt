@@ -1,0 +1,16 @@
+ca = allAirports | isInState(CA);
+bay = ca | isNearAirport(FAA:SFO, 40);
+print(bay);
+
+-------------
+
+p1 = isInCountry(USA);
+g1 = {FAA:SFO, ICAO:SAEZ, ICAO:EGLL};
+print(g1);
+g2 = g1 | p1;
+print(g2);
+ca = allAirports | isInState(CA);
+la = ca | isNearAirport(FAA:LAX, 50);
+print(la);
+
+-------------
