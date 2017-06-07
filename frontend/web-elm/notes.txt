@@ -1,0 +1,11 @@
+
+-- textarea : List (Attribute msg) -> List (Html msg) -> Html msg
+-- input : List (Attribute msg) -> List (Html msg) -> Html msg
+-- button :  List (Attribute msg) -> List (Html msg) -> Html msg
+-- type alias Attribute msg = Property msg
+-- text : String -> Html msg
+-- onInput : (String -> msg) -> Attribute msg
+-- placeholder : String -> Attribute msg
+-- style : List (String, String) -> Attribute msg
+
+-- send : (Result Error a -> msg) -> Request a -> Cmd msg
