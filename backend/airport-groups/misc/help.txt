@@ -1,18 +1,20 @@
+Airport Codes
+  FAA:SFO, ICAO:KLAX
 
-Set Assignment:
 
+Set Assignment
   set1 = {FAA:SFO, FAA:TEB, FAA:LAX}
 
+Predefined Sets
+  allAirports
 
 Set Operators
-
  union:      +
  intersect:  ^
  difference: -
 
 
 Predicate Functions
-
   isInState(state-code)
   isInCountry(country-code)
   isNorthOf(degrees-lattitude)
@@ -29,3 +31,6 @@ Predicate Operators
 Set | Predicate Operator
   such-that: |
 
+Other Commands
+  print(set-name);
+  airportIsInSet(airport-code, set-name);
