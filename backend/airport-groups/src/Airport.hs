@@ -201,26 +201,9 @@ distanceBetweenAirports ap1 ap2 = distanceMiles latLon1 latLon2
   where
     [latLon1, latLon2] = map apLatLon [ap1, ap2]
 
---------------------------------------------------------------------------------
 
 readUsStateCode :: Text -> UsStateCode
 readUsStateCode txt
   | T.length txt /= 2 = error "readUsStateCode: must be 2 chars"
   | otherwise = (T.head txt, T.last txt)
 
---------------------------------------------------------------------------------
-
-{-
-a1 = Airport (ID 1)
-             (AirportCodes (Just (FAA "SFO")) Nothing Nothing Nothing)
-             "USA"
-             (Just ('C', 'A'))
-             (LatLonDeg 33.7749 (-122.4194))
-  
-a2 = Airport (ID 2)
-             (AirportCodes (Just (FAA "LAX")) Nothing Nothing  (Just (CAC "USA" "LAX")))
-             "USA"
-             (Just ('C', 'A'))
-             (LatLonDeg 33.9416 (-118.4085))
-             
--}

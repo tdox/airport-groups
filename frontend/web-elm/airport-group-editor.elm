@@ -1,12 +1,12 @@
-import Html exposing (Html, Attribute, br, button, div, h1, input, p, text, textarea)
+import Html exposing (Html, Attribute, br, button, div, h1, input, p
+                     , text, textarea)
+
 import Html.Events exposing (onClick, onInput)
 import Html.Attributes exposing (disabled, placeholder, style)
 import Http exposing (Body, jsonBody)
 import Json.Decode exposing (Decoder, decodeString, field, list, map, string)
 import Json.Encode exposing (Value, object, string)
 import Debug exposing (log)
-
--- import Http
 
 type alias SourceCode = {src : String}
 type alias ProgOutput = {out : List String}
@@ -37,7 +37,6 @@ init initSrc initOutput =
     )
 
 
-
 -- UPDATE
 
 type Msg =
@@ -59,7 +58,8 @@ update msg model =
           ( {model | output = toString err}, Cmd.none)
 
       NewOutput (Ok out) ->
-          ( {model | output = String.concat(List.intersperse "\n" out.out)}, Cmd.none)
+          ( {model | output = String.concat(List.intersperse "\n" out.out)}
+          , Cmd.none)
               
 
 -- VIEW
@@ -69,7 +69,8 @@ view model =
   div [ centerStyle ]
     [
       h1 [h1Style] [text "Airport Groups"]
-    , textarea [ srcStyle, placeholder "Enter group definitions here", onInput SaveSrc ]  []
+    , textarea [ srcStyle, placeholder "Enter group definitions here"
+               , onInput SaveSrc ]  []
     , p [] []
     , button [ style [fontSize], onClick Run ] [ text "Run" ]
     , p [] []
@@ -96,14 +97,14 @@ mkBody : String -> Body
 mkBody src = jsonBody (encodeSourceCode (mkSourceCode src))
 
 progOutputDecoder : Decoder ProgOutput
-progOutputDecoder = map ProgOutput (field "out" (Json.Decode.list Json.Decode.string))
+progOutputDecoder =
+    map ProgOutput (field "out" (Json.Decode.list Json.Decode.string))
 
 runProgram : String -> Cmd Msg
 runProgram src =
     let
         url = "http://localhost:8080/airport-group"
         req = Http.post url (mkBody src) progOutputDecoder
-        --reqStr = log "req" req
     in
         Http.send NewOutput req
 

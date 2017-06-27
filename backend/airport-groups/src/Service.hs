@@ -20,18 +20,14 @@ import Data.Aeson (FromJSON, ToJSON)
 
 
 -- servant
-import Servant.API ((:>), (:<|>)(..), Capture, Get, JSON, PlainText, Post, QueryParam,
-                    ReqBody, StdMethod(OPTIONS), Verb)
+import Servant.API ((:>), JSON, Post, ReqBody)
        
 -- servant-server
-import Servant.Server (Handler, Server, serve, errBody, err400)
+import Servant.Server (Handler, Server, serve)
 
 
 -- text
-import Data.Text (Text, pack, unpack)
-
--- transformers
-import Control.Monad.IO.Class (liftIO)
+import Data.Text (Text, unpack)
 
 -- wai
 import Network.Wai (Application)
@@ -46,9 +42,6 @@ import Network.Wai.Handler.Warp (run)
 --------------------------------------------------------------------------------
 -- rest api specified as a type using Servant
 
---instance Generic (Stmt Airport)
---instance ToJSON (Stmt Airport)
---instance ToJSON (Program Airport)
 
 data SourceCode = SourceCode {src :: Text} deriving Generic
 data ProgOutput = ProgOutput {out :: [Text]} deriving Generic
@@ -58,17 +51,12 @@ instance ToJSON ProgOutput
 
 type AirportGroupAPI =
   "airport-group" :> ReqBody '[JSON] SourceCode :> Post '[JSON] ProgOutput
---  :<|> "airport-group" :> ReqBody '[JSON] SourceCode :> (Verb 'OPTIONS 405) '[PlainText] ()
-  -- "airport-groups" :> ReqBody '[String] String :> Post '[Text] [Text]
-  -- "airport-groups" :> ReqBody '[JSON] (Program Airport) :> Post '[JSON] ()
 
 --------------------------------------------------------------------------------
 -- handlers
 
--- compileRun :: AirportMaps -> String -> Handler [Text]
 compileRun :: AirportMaps -> SourceCode -> Handler ProgOutput
 compileRun aps (SourceCode txt) = do
---  liftIO $ putStrLn "compileRun"
   let o = compileAndRunProgram "" (unpack txt) aps :: [Text]
   return $ ProgOutput o
 
@@ -79,18 +67,10 @@ options _ _ = return ()
 -- server (built with servant + wai + warp)
 
 airportGroupServer :: AirportMaps -> Server AirportGroupAPI
-airportGroupServer aps = compileRun aps -- :<|> options aps
---  where
-  --  x = compileRun aps :: _
-
---server  :: AirportMaps -> Server API
---server aps = return $ airportGroupsServer aps
+airportGroupServer aps = compileRun aps
 
 airportGroupAPI :: Proxy AirportGroupAPI
 airportGroupAPI = Proxy
-
---api :: Proxy API
---api = Proxy
 
 app :: AirportMaps -> Application
 app aps = serve airportGroupAPI $ airportGroupServer aps
@@ -100,7 +80,6 @@ app aps = serve airportGroupAPI $ airportGroupServer aps
 
 service :: IO ()
 service = do
---  writeSwaggerJSON -- should really be in a separate main
   let
     port = 8080
     airportsFp = "./misc/airports_stg.txt"
@@ -109,11 +88,10 @@ service = do
   aps <- loadAirports airportsFp
   putStrLn " done"
 
---  planes <- emptyTableIO
   putStrLn $ "airport-group-service running on " ++ show port
---  putStrLn $ "View the API docs with swagger-ui at http://<SERVER>:" ++ (show port) ++ "/swagger.json"
---  run port $ app aps
 
   run port $ cors (const $ Just policy) $ app aps
-    where policy = simpleCorsResourcePolicy { corsRequestHeaders = ["Content-Type"] }
+    where
+      policy =
+        simpleCorsResourcePolicy { corsRequestHeaders = ["Content-Type"] }
 -- See: https://github.com/haskell-servant/servant-swagger/issues/45

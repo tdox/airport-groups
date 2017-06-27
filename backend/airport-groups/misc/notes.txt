@@ -1,0 +1,174 @@
+
+
+
+
+
+s1 = {"a", "b", "c"}
+s2 = {"c", "d, "e"}
+s3 = {}
+
+s3 = s1 + s2                         -- {"a", "b", "c", "d", "e"}
+s4 = s1 ^ s2                         -- {"c"}
+
+s5 = s1 + {"b", "c", "x"}           -- {"a", "b", "c", "x"}
+s6 = s1 - s2                        -- {"a", "b"}
+s7 = s1 | pred(s1)
+
+b1 = element s1 "a"  -- true
+
+
+
+http://stackoverflow.com/questions/16970431/implementing-a-language-interpreter-in-haskell
+
+https://github.com/budabudimir/imp_interpreter
+
+--------------------
+
+Airports
+
+everyAirport
+
+
+
+a1 := FAA:SFO;
+a2 := ICAO:KSFO;
+
+as1 := {FAA:SFO, ICAO:KSFO}; -- Set Airport
+as2 := {FAA:MDW, ICAO:TEB};
+
+as3 := as1 + as2
+as4 := as1 + as2 -- union
+as5 := as1 ^ as2 -- intersection
+
+loc1 := (34.345, -72.22) -- (lat, lon) in decimal degrees
+
+dist1 := distance loc1 loc2 -- distance
+region1 := circle loc1 radius : 
+
+b1 = airportIsInRegion a1 region1
+
+
+isInCA := isInState(CA)
+pred2 := isInCountry(USA)
+pred3 := isNear(FAA:SFO, 100)
+
+isInOR := isInState(OR)
+
+usAps := everyAirport suchThat (isInCountry "US")
+      := suchThat(isInCountry("USA"), everyAirport))
+      := everyAirport | isInCountry("USA")
+
+isInCAorOR := isInState(CA) predOr isInState(OR)
+           := isInState(CA) || isInState(OR)
+
+           isNorthOfAirport(FAA:SFO)
+           isSouthOfAirport, isEastOfAirport, isWestOfAirport
+
+isNorthOfLatitude(34.5)
+isSouthOfLatitude(34)
+isBetweenLongitudes(22, 26)
+
+
+pred1 := isInState(CA) && isNorthOf(FAA:SFO)
+
+as3 := usAps suchThat isInCAorOr
+
+
+
+
+
+{-
+
+<program> ::=  <stmt> ";"  | <stmt> ";" <program>
+
+<stmt> ::= <set-assign-stmt>
+         | <pred-assign-stmt>
+         | <print-stmt>
+         | <airport-is-in-set-stmt>
+         | <airport-satisfies-pred-stmt>
+
+<set-assign-stmt> ::= <set-var> "=" <set-expr>
+<pred-assign-stmt> ::= <pred-var> "=" <pred-expr>
+<print-stmt> ::= "print(" <set-var> ")"
+<airport-is-in-set-stmt> ::= "airportIsInSet(" <airport-identifier> "," <set-var> ")"
+<airport-satisfies-pred-stmt> ::= "airportSatisfiesPredicate(" <airport-identifier> "," <pred-var> ")
+
+<set-var> ::= <alphanumeric>
+
+<set-expr> ::= <set-var>
+             | <set-paren-expr>
+             | <airport-identifier-list>
+             | <set-union-expr>
+             | <set-intersection-expr>
+             | <set-difference-expr>
+             | <set-such-that-expr>
+
+<set-paren-expr> ::= "(" <set-expr> ")"
+<set-union-expr> ::= <set-op-arg-expr> <union> <set-op-arg-expr>
+
+<set-op-arg-expr> :: = <set-var>
+                     | <set-paren-expr>
+                     | <set-airport-identifier-list>
+
+<set-intersection-expr> ::= <set-expr> <intersection> <set-expr>
+<set-such-that-expr> ::=  <set-expr> "|" <pred-expr>
+
+
+<union> ::=  "+"
+<intersection> ::=  "^"
+
+<airport-identifer-list> = "[" <airport-identifiers> "]"
+
+<airport-identifiers> ::= <airport-identifier>
+                        | <airport-identifier> "," <airport-identifiers>
+
+<airport-identifier> ::= <faa-identifier>
+                       | <icao-identifier>
+                       | <iata-identifier>
+                       | <acc-identifier>
+
+<faa-identifier>  ::= "FAA:"<characters>
+<icao-identifier> ::= "ICAO:"<characters>
+<iata-identifier> ::= "IATA:"<characters>
+<acc-identifier>  ::= "ACC:"<country-code>":"<characters>
+
+<pred-expr> ::= <pred-var>
+              | "(" <pred-expr> ")"
+              | <pred-op-arg-expr> <pred-op> <pred-op-arg-expr>
+              | <pred-not-expr> <pred-op-arg-expr>
+              | "isInState(" <state-code> ")"
+              | "isInCountry(" <country-code> ")"
+              | "isNearInMiles(" <airport-identifier> "," <float> ")"
+              | "isNorthOf(" <float> ")"
+              | "isSouthOf(" <float> ")"
+              | "isEastOf(" <float> ")"
+              | "isWestOf(" <float> "," <float> ")"
+
+<pred-op> ::= <and> | <or>
+<and> ::= "&&"
+<or> ::= "||"
+<not> ::= "!"
+
+<state-code" ::= <character><character>
+<country-code" ::= <characters>
+
+-}
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+
+{-
+a1 = Airport (ID 1)
+             (AirportCodes (Just (FAA "SFO")) Nothing Nothing Nothing)
+             "USA"
+             (Just ('C', 'A'))
+             (LatLonDeg 33.7749 (-122.4194))
+  
+a2 = Airport (ID 2)
+             (AirportCodes (Just (FAA "LAX")) Nothing Nothing  (Just (CAC "USA" "LAX")))
+             "USA"
+             (Just ('C', 'A'))
+             (LatLonDeg 33.9416 (-118.4085))
+             
+-}

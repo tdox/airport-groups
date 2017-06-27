@@ -3,7 +3,6 @@
 
 module Parser where
 
-
 -- base
 import Control.Monad (void)
 -- import Debug.Trace
@@ -47,89 +46,10 @@ import Groups (Program, Pred(Pred)
               )
 
 --------------------------------------------------------------------------------
-{-
-
-<program> ::=  <stmt> ";"  | <stmt> ";" <program>
-
-<stmt> ::= <set-assign-stmt>
-         | <pred-assign-stmt>
-         | <print-stmt>
-         | <airport-is-in-set-stmt>
-         | <airport-satisfies-pred-stmt>
-
-<set-assign-stmt> ::= <set-var> "=" <set-expr>
-<pred-assign-stmt> ::= <pred-var> "=" <pred-expr>
-<print-stmt> ::= "print(" <set-var> ")"
-<airport-is-in-set-stmt> ::= "airportIsInSet(" <airport-identifier> "," <set-var> ")"
-<airport-satisfies-pred-stmt> ::= "airportSatisfiesPredicate(" <airport-identifier> "," <pred-var> ")
-
-<set-var> ::= <alphanumeric>
-
-<set-expr> ::= <set-var>
-             | <set-paren-expr>
-             | <airport-identifier-list>
-             | <set-union-expr>
-             | <set-intersection-expr>
-             | <set-difference-expr>
-             | <set-such-that-expr>
-
-<set-paren-expr> ::= "(" <set-expr> ")"
-<set-union-expr> ::= <set-op-arg-expr> <union> <set-op-arg-expr>
-
-<set-op-arg-expr> :: = <set-var>
-                     | <set-paren-expr>
-                     | <set-airport-identifier-list>
-
-<set-intersection-expr> ::= <set-expr> <intersection> <set-expr>
-<set-such-that-expr> ::=  <set-expr> "|" <pred-expr>
-
-
-<union> ::=  "+"
-<intersection> ::=  "^"
-
-<airport-identifer-list> = "[" <airport-identifiers> "]"
-
-<airport-identifiers> ::= <airport-identifier>
-                        | <airport-identifier> "," <airport-identifiers>
-
-<airport-identifier> ::= <faa-identifier>
-                       | <icao-identifier>
-                       | <iata-identifier>
-                       | <acc-identifier>
-
-<faa-identifier>  ::= "FAA:"<characters>
-<icao-identifier> ::= "ICAO:"<characters>
-<iata-identifier> ::= "IATA:"<characters>
-<acc-identifier>  ::= "ACC:"<country-code>":"<characters>
-
-<pred-expr> ::= <pred-var>
-              | "(" <pred-expr> ")"
-              | <pred-op-arg-expr> <pred-op> <pred-op-arg-expr>
-              | <pred-not-expr> <pred-op-arg-expr>
-              | "isInState(" <state-code> ")"
-              | "isInCountry(" <country-code> ")"
-              | "isNearInMiles(" <airport-identifier> "," <float> ")"
-              | "isNorthOf(" <float> ")"
-              | "isSouthOf(" <float> ")"
-              | "isEastOf(" <float> ")"
-              | "isWestOf(" <float> "," <float> ")"
-
-<pred-op> ::= <and> | <or>
-<and> ::= "&&"
-<or> ::= "||"
-<not> ::= "!"
-
-<state-code" ::= <character><character>
-<country-code" ::= <characters>
-
--}
---------------------------------------------------------------------------------
 
 prog :: Parsec String AirportMaps (Program Airport)
---prog = endBy1 stmt (char ';') 
 
 prog = do
---  spaces
   s <- stmt
   inp <- getInput
   let more = not $ null inp
@@ -141,31 +61,12 @@ prog = do
    return [s]
 
 
-{-
-  when more $ do
-    ss <- prog
-    return $ s:ss
--}
-
-{-
-prog = do
-  s1 <- stmt
-  s2 <- stmt
-  return [s1, s2]
--}
-
---prog = many stmt
---prog = many1 stmt
---prog = semiSep1 stmt
-
 stmt :: Parsec String AirportMaps (Stmt Airport)
 stmt = do
 --  inp <- getInput
 --  traceM $ "stmt: inp: " ++ inp
   spaces
   st <- stmtTxt
---  spaces
---  void $ char ';'
   spaces
   return st
 
@@ -176,7 +77,6 @@ stmtTxt =
    <|> try setAssignStmt
    <|> try printStmt
    <|> try airportIsInSetStmt
---   <|> try airportSatisfiesPredStmt
 
 
 setAssignStmt :: Parsec String AirportMaps (Stmt Airport)
@@ -233,22 +133,6 @@ airportIsInSetStmt = do
   void $ char ';'
   return $ ElemOf ap setV
 
-{-
-airportSatisfiesPredStmt :: Parsec String AirportMaps (Stmt Airport)
-airportSatisfiesPredStmt = do
-  void $ string "airportSatisfiesPredicate("
-  spaces
-  ap <- airport
-  spaces
-  void $ char ','
-  spaces
-  predV <- predVarExpr
-  spaces
-  void $ char ')'
-  spaces
-  void $ char ';'
-  return $ AirportSatisfiesPred ap predV
--}
 
 setVar :: Parsec String st Var
 setVar = pack <$> identifier
@@ -364,10 +248,6 @@ airport = do
     Nothing -> unexpected "unknown airport"
     Just ap -> return ap
 
-
---set :: Parsec String AirportMaps (SetVar Airport)
---set = do
-  
 
 airportIdentifier :: Parsec String st AirportCode
 airportIdentifier = do
@@ -649,6 +529,3 @@ compileAndRunProgram programFp progStr aps = reverse output
         Left err -> [err]
         Right (out, _) -> out
 
-
-    
---------------------------------------------------------------------------------
