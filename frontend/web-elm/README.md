@@ -6,7 +6,7 @@ This dirrectory contains the frontend for airport groups.
 ## To build and run the frontend
 
 
-Install [elm](https://http://elm-lang.org/).
+Install [elm](https://elm-lang.org/).
 
 
 Build:
