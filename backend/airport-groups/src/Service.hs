@@ -12,15 +12,16 @@ import Airport
 import Parser
 
 -- base
-import Data.Proxy (Proxy(Proxy))
+-- import Data.Proxy (Proxy(Proxy))
 import GHC.Generics (Generic)
 
 -- aeson
 import Data.Aeson (FromJSON, ToJSON)
 
+import Servant
 
 -- servant
-import Servant.API ((:>), JSON, Post, ReqBody)
+import Servant.API ((:>), (:<|>), JSON, Post, Raw, ReqBody)
        
 -- servant-server
 import Servant.Server (Handler, Server, serve)
@@ -51,6 +52,7 @@ instance ToJSON ProgOutput
 
 type AirportGroupAPI =
   "airport-group" :> ReqBody '[JSON] SourceCode :> Post '[JSON] ProgOutput
+   :<|> "web-app" :> Raw
 
 --------------------------------------------------------------------------------
 -- handlers
@@ -66,14 +68,21 @@ options _ _ = return ()
 --------------------------------------------------------------------------------
 -- server (built with servant + wai + warp)
 
-airportGroupServer :: AirportMaps -> Server AirportGroupAPI
-airportGroupServer aps = compileRun aps
+--airportGroupServer :: AirportMaps -> Server AirportGroupAPI
+--airportGroupServer aps = undefined -- compileRun aps
+
+server :: AirportMaps -> Server AirportGroupAPI
+server aps = serveInterpreter :<|> serveHtml
+  where
+    serveInterpreter = compileRun aps -- undefined :: 
+    serveHtml = serveDirectory "/tmp/apg"
 
 airportGroupAPI :: Proxy AirportGroupAPI
 airportGroupAPI = Proxy
 
 app :: AirportMaps -> Application
-app aps = serve airportGroupAPI $ airportGroupServer aps
+-- app aps = serve airportGroupAPI $ airportGroupServer aps
+app aps = serve airportGroupAPI $ server aps
 
 --------------------------------------------------------------------------------
 -- server-io

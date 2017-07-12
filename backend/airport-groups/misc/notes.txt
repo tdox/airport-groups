@@ -1,7 +1,17 @@
+Notes
+--------------------------------------------------------------------------------
+dev notes
+
+To Do
+[ ] Create build and deploy scripts.
+[ ] Improve location scheme for index.html
+    Currently index.html should be copied to /tmp/apg.  That page is served
+    from http://localhost:8080/web-app/
 
 
 
 
+--------------------------------------------------------------------------------
 
 s1 = {"a", "b", "c"}
 s2 = {"c", "d, "e"}

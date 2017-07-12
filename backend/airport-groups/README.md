@@ -10,6 +10,10 @@ Install [stack](https://docs.haskellstack.org/en/stable/README/). On MacOs:
 
 `$ brew install haskell-stack`
 
+Install haskell:
+
+`$ stack setup`
+
 Build the service:
 
 `$ stack build`
