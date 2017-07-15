@@ -1,6 +1,7 @@
 elm-stuff
 elm-package.json
 index.html
+target
 .stack-work
 *.hi
 *~

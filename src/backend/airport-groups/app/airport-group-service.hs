@@ -1,6 +1,6 @@
 module Main where
 
-import Service
+import Service (service)
 
 main :: IO ()
 main = service

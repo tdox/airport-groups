@@ -50,9 +50,10 @@ data ProgOutput = ProgOutput {out :: [Text]} deriving Generic
 instance FromJSON SourceCode
 instance ToJSON ProgOutput
 
+
 type AirportGroupAPI =
   "airport-group" :> ReqBody '[JSON] SourceCode :> Post '[JSON] ProgOutput
-   :<|> "web-app" :> Raw
+   :<|> "airport-groups" :> Raw
 
 --------------------------------------------------------------------------------
 -- handlers
@@ -75,7 +76,7 @@ server :: AirportMaps -> Server AirportGroupAPI
 server aps = serveInterpreter :<|> serveHtml
   where
     serveInterpreter = compileRun aps -- undefined :: 
-    serveHtml = serveDirectory "/tmp/apg"
+    serveHtml = serveDirectory "../assets"
 
 airportGroupAPI :: Proxy AirportGroupAPI
 airportGroupAPI = Proxy
@@ -91,13 +92,14 @@ service :: IO ()
 service = do
   let
     port = 8080
-    airportsFp = "./misc/airports_stg.txt"
+    airportsFp = "../assets/airports.txt"
 
   putStr "loading airports..."
   aps <- loadAirports airportsFp
   putStrLn " done"
 
-  putStrLn $ "airport-group-service running on " ++ show port
+  -- putStrLn $ "airport-group-service running on " ++ show port
+  putStrLn $ "browse to http://localhost:" ++ show port ++ "/airport-groups"
 
   run port $ cors (const $ Just policy) $ app aps
     where
