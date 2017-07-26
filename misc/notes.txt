@@ -1,12 +1,29 @@
 Notes
+
+------------------------
+
+docker
+
+$ docker build -t airport-groups .
+$ docker run -p 8080:8080 airport-groups
+
+http:://localhost:8080/airport-groups
+
+$ docker ps
+$ docker stop 
+
 --------------------------------------------------------------------------------
 dev notes
 
 To Do
-[ ] Create build and deploy scripts.
-[ ] Improve location scheme for index.html
+[x] Create build and deploy scripts.
+[x] Improve location scheme for index.html
     Currently index.html should be copied to /tmp/apg.  That page is served
     from http://localhost:8080/web-app/
+[ ] Improve docker setup
+  [ ] create and save image ubuntu-gmp
+[ ] include help files
+
 
 
 
