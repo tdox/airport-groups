@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<html>
+<head>
+<title>Help for Airport Groups</title>
+</head>
+<body>
+
+<h1>Airport Groups</h1>
+<p>
+  Airport Groups is a simple web app to showcase a possible method for
+  creating groups of airports.
+  Here's a screen shot of the app.
+</p>
+
+<p>
+  You use the upper portion of the page to define your groups. To make sure
+  you've defined your groups
+  correctly, push the Run button and check the output in the lower portion
+  of the page.
+</p>
+
+<h2>Simple First Examples</h2>
+
+<p>
+  Here's the defintion of a very simple group.
+</p>
+
+
+<code>
+  g1 = {FAA:SFO};<br>
+  print(g1);
+</code>
+
+<p>
+  If you enter this into input field of the app and then push the Run button,
+  you'll see this displayed.
+</p>
+
+
+<code>
+  g1 = {FAA:SFO}
+</code>
+
+<p>
+  In the first line of your input, you defined a group, called "g1", that
+  consists of a single airport having the FAA code SFO.  In the second line,
+  you told the app to print the definition of g1.
+</p>
+
+<p>
+  Here's a slightly more complicated example:
+</p>
+
+<code>
+  g1 = {FAA:SFO, FAA:OAK};<br>
+  g2 = {ICAO:KTEB};<br>
+  g3 = g1 + g2;<br>
+  print(g3);
+</code>
+
+
+<p>And its output:</p>
+
+<code>
+  g3 = {FAA:TEB,FAA:OAK,FAA:SFO}
+</code>
+
+<p>
+  Now for some explanations.   Airports are specfied by a code type
+  (either ICAO, IATA or FAA),
+  followed by a colon, followed
+  by the code. You define a group of airports
+  by listing them between braces. The airports must be separated by a commas.
+
+  You can give a group a name by entering it on the left hand side of an
+  equals sign.
+
+  To print the definition of a group, use the print command.
+
+  All commands are separated from each other with semi-colons;
+</p>
+
+<p>
+  The third line of the second example, "g3 = g1 + g2", shows how to combine
+  groups with the plus sign, or union operator.
+</p>
+
+<p>
+  You now know the basics of how to define and print simple groups.  In the
+  next section, you'll see examples that introduce other group operators.
+</p>
+
+</body>
+</html>

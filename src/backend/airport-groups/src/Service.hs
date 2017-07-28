@@ -91,7 +91,7 @@ app aps = serve airportGroupAPI $ server aps
 service :: IO ()
 service = do
   let
-    port = 8080
+    port = 80
     airportsFp = "../assets/airports.txt"
 
   putStr "loading airports..."

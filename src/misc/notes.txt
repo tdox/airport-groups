@@ -5,12 +5,28 @@ Notes
 docker
 
 $ docker build -t airport-groups .
-$ docker run -p 8080:8080 airport-groups
+$ docker run -p 80:80 airport-groups
 
-http:://localhost:8080/airport-groups
+http:://localhost/airport-groups
 
 $ docker ps
 $ docker stop 
+
+docker username: tdox
+
+$ docker run -p 80:8080 airport-groups
+ port 80 of the host is mapped to port 8080 of container
+
+$ docker login
+$ docker tag airport-groups tdox/airport-groups
+$ docker push tdox/airport-groups
+$ docker run -p 80:80 tdox/airport-groups
+
+--------------------------------------
+
+aws
+see ~/aws/aws-notes.txt
+
 
 --------------------------------------------------------------------------------
 dev notes
@@ -20,6 +36,9 @@ To Do
 [x] Improve location scheme for index.html
     Currently index.html should be copied to /tmp/apg.  That page is served
     from http://localhost:8080/web-app/
+[ ] setup localhost vs prod configuration
+  [ ] port: 8080 vs 80
+  [ ] hostname: localhost vs. beta.planit9.com
 [ ] Improve docker setup
   [ ] create and save image ubuntu-gmp
 [ ] include help files
