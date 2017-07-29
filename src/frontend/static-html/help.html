@@ -27,6 +27,7 @@
 </p>
 
 
+
 <code>
   g1 = {FAA:SFO};<br>
   print(g1);
@@ -54,7 +55,7 @@
 
 <code>
   g1 = {FAA:SFO, FAA:OAK};<br>
-  g2 = {ICAO:KTEB};<br>
+  g2 = {ICAO:KJFK};<br>
   g3 = g1 + g2;<br>
   print(g3);
 </code>
@@ -63,7 +64,7 @@
 <p>And its output:</p>
 
 <code>
-  g3 = {FAA:TEB,FAA:OAK,FAA:SFO}
+  g3 = {FAA:JFK,FAA:OAK,FAA:SFO}
 </code>
 
 <p>
@@ -71,7 +72,7 @@
   (either ICAO, IATA or FAA),
   followed by a colon, followed
   by the code. You define a group of airports
-  by listing them between braces. The airports must be separated by a commas.
+  by listing them between braces. The airports must be separated by commas.
 
   You can give a group a name by entering it on the left hand side of an
   equals sign.
@@ -91,5 +92,106 @@
   next section, you'll see examples that introduce other group operators.
 </p>
 
+
+<h2>Combining Groups</h2>
+
+<p>
+  You can combine groups by using different operators, '+' for union,
+  '^' for intersection and '-' for difference, as shown in the
+  following example.
+</p>
+
+<p>Input:</p>
+
+<code>
+  g1 = {FAA:SFO, FAA:OAK, FAA:LAX};<br>
+  g2 = {FAA:SFO, FAA:JFK};<br>
+  union = g1 + g2;<br>
+  intersection = g1 ^ g2;<br>
+  difference = g1 - g2;<br>
+  <br>
+  print(union);<br>
+  print(intersection);<br>
+  print(difference);<br>
+</code>
+
+<p>Output:</p>
+<code>
+  union = {FAA:JFK,FAA:LAX,FAA:OAK,FAA:SFO}<br>
+  intersection = {FAA:SFO}<br>
+  difference = {FAA:LAX,FAA:OAK}<br>
+</code>
+
+<p>
+You can control the order of operations by using parenthesis.
+</p>
+
+<p>Input:</p>
+
+<code>
+g1 = {FAA:SFO, FAA:OAK, FAA:LAX};<br>
+g2 = {FAA:SFO, FAA:JFK};<br>
+
+
+g3 = (g1 + g2) - {FAA:LAX};<br>
+g4 = g1 + (g2 - {FAA:LAX});<br>
+
+print(g3);<br>
+print(g4);<br>
+</code>
+
+<p>Output:</p>
+<code>
+g3 = {FAA:JFK,FAA:OAK,FAA:SFO}<br>
+g4 = {FAA:JFK,FAA:LAX,FAA:OAK,FAA:SFO}<br>
+</code>
+
+<h2>Using Predicates</h2>
+
+<p> 
+  Another way to select certain airports from groups is to use the "such that"
+  operator '|' with a predicate.
+</p>
+
+
+<p>Input:</p>
+
+
+<code>
+g1 = {FAA:SFO, FAA:JFK};<br>
+g2 = g1 | isInState(CA);<br>
+
+print(g2);<br>
+</code>
+  
+<p>Output:</p>
+<code>
+  g2 = {FAA:SFO}<br>
+</code>
+
+<p>
+  There are 7 predicates (shown with example arguments):
+  <code>
+  <ul>
+    <li> isInCountry(USA) </li>
+    <li> isInState(NY) </li>
+    <li> isNearAirport(FAA:SFO, 10) </li>
+    <li> isNorthOf(37.77) </li>
+    <li> isSouthOf(25.76) </li>
+    <li> isEastOf(-122.42) </li>
+    <li> isWestOf(-80.19) </li>
+  </ul>
+  </code>
+</p>
+
+<p>
+  You can imagine that defining groups of airports, such as all of the
+  airports in California, by listing all of them
+  would be very tedious and error prone.  Luckily 
+</p>
+
+
 </body>
 </html>
+
+

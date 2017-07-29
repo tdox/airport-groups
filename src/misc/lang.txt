@@ -61,7 +61,7 @@ Airport Group Language
               | <pred-not-expr> <pred-op-arg-expr>
               | "isInState(" <state-code> ")"
               | "isInCountry(" <country-code> ")"
-              | "isNearInMiles(" <airport-identifier> "," <float> ")"
+              | "isNearInAirport(" <airport-identifier> "," <float> ")"
               | "isNorthOf(" <float> ")"
               | "isSouthOf(" <float> ")"
               | "isEastOf(" <float> ")"
