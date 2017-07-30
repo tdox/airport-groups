@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <title>Airport Group Examples</title>
+
+    <style>
+      body {
+      font-family: sans-serif;
+      margin: 20px;
+      }
+      </style>
+
+  
+</head>
+<body>
+
+  <h1> Airport Group Examples</h1>
+
+  <p>
+    Here are several examples, which you can copy and paste into the airport
+    groups app.
+  </p>
+
+  <h2>Example 1</h2>
+
+  <code>
+    g1 = {ICAO:KSFO};<br>
+    print(g1);<br>
+  </code>
+
+  <hr>
+
+  <h2>Example 2</h2>
+
+  <code>
+    g1 = {ICAO:KMDW};<br>
+    print(g1);<br>
+    g2 = {FAA:LAX, FAA:PAO, FAA:SFO};<br>
+    print(g2);<br>
+    g3 = g1 + g2;<br>
+    print(g3);<br>
+    g4 = g2 ^ {FAA:PAO, FAA:SFO, FAA:STL};<br>
+    print(g4);<br>
+    g5 = {ICAO:KSFO} + g1;<br>
+    print(g5);<br>
+  </code>
+
+  <hr>
+
+
+  <h2>Example 3</h2>
+
+  <code>
+    f1 = isInCountry(USA);<br>
+    g1 = {FAA:SFO, ICAO:SAEZ, ICAO:EGLL};<br>
+    print(g1);<br>
+    g2 = g1 | f1;<br>
+    print(g2);<br>
+    f2 = isInCountry(ARG);<br>
+    g3 = g1 | f2;<br>
+    print(g3);<br>
+    g4 = g1 | isInCountry(ARG);<br>
+    print(g4);<br>
+    g5 = g1 | isInCountry(GBR);<br>
+    print(g5);<br>
+    f3 = isInCountry(ARG) || isInCountry(GBR);<br>
+    g6 = g1 | f3;<br>
+    print(g6);<br>
+
+
+    g7 = g1 | !f3;<br>
+    print(g7);<br>
+    g8 = g1 | ! isInCountry(USA);<br>
+    print(g8);<br>
+
+  </code>
+
+  <hr>
+
+
+  <h2>Example 4</h2>
+
+  <code>
+    g1 = {FAA:SFO};<br>
+    g2 = {FAA:LAX};<br>
+    g3 = {FAA:MIA, FAA:LAX};<br>
+    g4 = (g1 + g2) ^ g3;<br>
+    print(g4);<br>
+    g5 = g1 + (g2 ^ g3);<br>
+    print(g5);<br>
+    
+  </code>
+
+  <hr>
+
+
+  <h2>Example 5</h2>
+
+  <code>
+    g1 = {FAA:SFO, FAA:LAX, FAA:MIA};<br>
+    f1 = isInCountry(USA);<br>
+    f2 = isInState(CA);<br>
+    f3 = isNorthOfLatitude(30);<br>
+    g2 = g1 | f3;<br>
+    print(g2);<br>
+
+  </code>
+  
+  <hr>
+
+
+
+    <h2>Example 6</h2>
+
+    <code>
+      g1 = {FAA:SEA, FAA:SFO, FAA:LAX, FAA:DEN, FAA:DAL, FAA:MDW, FAA:TEB, FAA:MIA};<br>
+      f1 = isNorthOf(36) && isSouthOf(42);<br>
+      g2 = g1 | f1;<br>
+      print(g2);<br>
+      f2 = isEastOf(-110) && isWestOf(-90);<br>
+      g3 = g1 | f1 && f2;<br>
+      print(g3);<br>
+      f3 = f1 && (isEastOf(-110) && isWestOf(-90));<br>
+      g4 = g1 | f3;<br>
+      print(g4);<br>
+      g5 = g1 | (isNorthOf(36) && isSouthOf(42))
+      && (isEastOf(-110) && isWestOf(-90));<br>
+      print(g5);<br>
+      g6 = g1 | !isSouthOf(45);<br>
+      print(g6);<br>
+      g7 = g1 | (isEastOf(-75) || isWestOf(-120));<br>
+      print(g7);<br>
+
+  </code>
+
+  <hr>
+
+
+    <h2>Example 7</h2>
+
+  <code>
+    g1 = {FAA:SEA, FAA:SFO, FAA:LAX, FAA:DEN, FAA:DAL, FAA:MDW, FAA:TEB, FAA:MIA};<br>
+    airportIsInSet(FAA:SEA, g1);<br>
+    airportIsInSet(ICAO:KSEA, g1);<br>
+    airportIsInSet(FAA:EQY, g1);<br>
+    
+  </code>
+
+  <hr>
+
+
+  <h2>Example 8</h2>
+
+  <code>
+    g1 = {FAA:SEA, FAA:SFO, FAA:SJC, FAA:OAK, FAA:PAO, FAA:LAX, FAA:DEN, FAA:DAL, FAA:MDW, FAA:TEB, FAA:MIA, FAA:SQL};<br>
+    g2 = g1 | isNearAirport(FAA:SFO, 50);<br>
+    print(g2);<br>
+    
+  </code>
+  
+  <hr>
+
+
+  <h2>Example 9</h2>
+
+  <code>
+    g1 = allAirports | isInCountry(USA);<br>
+    g2 = g1 | isInState(RI);<br>
+    print(g2);<br>
+    g3 = g1 | isNearAirport(FAA:SFO, 50);<br>
+    print(g3);<br>
+
+  </code>
+  
+  <hr>
+
+
+
+  <h2>Example 10</h2>
+
+  <code>
+    g1 = {FAA:SFO, FAA:LAX, FAA:SJC, FAA:TEB};<br>
+    print(g1);<br>
+    g2 = {FAA:JFK, FAA:SFO, FAA:LAX, FAA:MIA, FAA:MDW};<br>
+    print(g2);<br>
+    g3 = g1 - g2;<br>
+    print(g3);<br>
+    g4 = g2 - g1;<br>
+    print(g4);<br>
+    
+  </code>
+
+  <hr>
+
+
+
+</body>
+</html>

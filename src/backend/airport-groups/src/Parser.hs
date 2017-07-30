@@ -14,12 +14,16 @@ import Data.Set (Set, fromList)
 import qualified Data.Set as S
 
 -- parsec
-import Text.Parsec (Parsec, ParseError, (<|>), char, getInput
-                   , getState, letter, many1, runParser
+import Text.Parsec (Parsec, ParseError, (<|>), char, digit, getInput
+                   , getState, letter, many1, oneOf, option, runParser
                    , skipMany, space, string, try, unexpected)
 
 import qualified Text.Parsec.Token as P
-import Text.Parsec.Language (haskellDef)
+--import Text.Parsec.Language (haskellDef)
+import Text.Parsec.Language (mondrianDef)
+
+-- parsec3
+-- import Text.Parsec.Number (floating)
 
 -- text
 import Data.Text (Text, pack)
@@ -455,16 +459,36 @@ spaces :: Parsec String st ()
 spaces = skipMany space
 
 lexer :: P.TokenParser st
-lexer = P.makeTokenParser haskellDef
+lexer = P.makeTokenParser mondrianDef -- haskellDef
 
 commaSep1 = P.commaSep1 lexer
 braces = P.braces lexer
 identifier = P.identifier lexer
 semiSep1 = P.semiSep1 lexer
-float = P.float lexer
+-- float = P.float lexer
 parens = P.parens lexer
 integer = P.integer lexer
 
+--------------------------------------------------------------------------------
+-- copied from
+-- https://www.schoolofhaskell.com/school/to-infinity-and-beyond/pick-of-the-week/parsing-floats-with-parsec
+
+(<++>) a b = (++) <$> a <*> b
+(<:>) a b = (:) <$> a <*> b
+
+number = many1 digit
+
+plus = char '+' *> number
+
+minus = char '-' <:> number
+
+--integer :: Int
+integer2 = plus <|> minus <|> number
+
+float = fmap rd $ integer2 <++> decimal <++> exponent
+    where rd       = read :: String -> Double
+          decimal  = option "" $ char '.' <:> number
+          exponent = option "" $ oneOf "eE" <:> integer2
 
 --------------------------------------------------------------------------------
 

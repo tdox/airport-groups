@@ -1,7 +1,22 @@
 <!DOCTYPE html>
 <html lang="en-US">
-<html>
-<head>
+  <head>
+
+    <style>
+      body {
+      font-family: sans-serif;
+      margin: 20px;
+      }
+
+      div.code1 {
+      background-color:#eff1da;
+      margin: 20px;
+      width: 600px;
+      }
+
+    </style>
+
+    
 <title>Help for Airport Groups</title>
 </head>
 <body>
@@ -27,21 +42,23 @@
 </p>
 
 
-
+<div class="code1">
 <code>
   g1 = {FAA:SFO};<br>
   print(g1);
 </code>
+</div>
 
 <p>
-  If you enter this into input field of the app and then push the Run button,
+  If you enter this into the input field of the app and then push
+  the Run button,
   you'll see this displayed.
 </p>
 
-
+<div class="code1">
 <code>
   g1 = {FAA:SFO}
-</code>
+</code></div>
 
 <p>
   In the first line of your input, you defined a group, called "g1", that
@@ -53,19 +70,21 @@
   Here's a slightly more complicated example:
 </p>
 
+<div class="code1">
 <code>
   g1 = {FAA:SFO, FAA:OAK};<br>
   g2 = {ICAO:KJFK};<br>
   g3 = g1 + g2;<br>
   print(g3);
-</code>
+</code></div>
 
 
 <p>And its output:</p>
 
+<div class="code1">
 <code>
   g3 = {FAA:JFK,FAA:OAK,FAA:SFO}
-</code>
+</code></div>
 
 <p>
   Now for some explanations.   Airports are specfied by a code type
@@ -79,7 +98,7 @@
 
   To print the definition of a group, use the print command.
 
-  All commands are separated from each other with semi-colons;
+  All commands are separated from each other with semi-colons.
 </p>
 
 <p>
@@ -96,13 +115,18 @@
 <h2>Combining Groups</h2>
 
 <p>
-  You can combine groups by using different operators, '+' for union,
-  '^' for intersection and '-' for difference, as shown in the
-  following example.
+  You can combine groups by using different operators:
+  <ul>
+    <li>'+' for union,</li>
+    <li>  '^' for intersection and</li>
+    <li>'-' for difference</li>
+  </ul>
+as shown in the following example.
 </p>
 
 <p>Input:</p>
 
+<div class="code1">
 <code>
   g1 = {FAA:SFO, FAA:OAK, FAA:LAX};<br>
   g2 = {FAA:SFO, FAA:JFK};<br>
@@ -113,14 +137,15 @@
   print(union);<br>
   print(intersection);<br>
   print(difference);<br>
-</code>
+</code></div>
 
 <p>Output:</p>
+<div class="code1">
 <code>
   union = {FAA:JFK,FAA:LAX,FAA:OAK,FAA:SFO}<br>
   intersection = {FAA:SFO}<br>
   difference = {FAA:LAX,FAA:OAK}<br>
-</code>
+</code></div>
 
 <p>
 You can control the order of operations by using parenthesis.
@@ -128,6 +153,7 @@ You can control the order of operations by using parenthesis.
 
 <p>Input:</p>
 
+<div class="code1">
 <code>
 g1 = {FAA:SFO, FAA:OAK, FAA:LAX};<br>
 g2 = {FAA:SFO, FAA:JFK};<br>
@@ -138,39 +164,42 @@ g4 = g1 + (g2 - {FAA:LAX});<br>
 
 print(g3);<br>
 print(g4);<br>
-</code>
+</code></div>
 
 <p>Output:</p>
+<div class="code1">
 <code>
 g3 = {FAA:JFK,FAA:OAK,FAA:SFO}<br>
 g4 = {FAA:JFK,FAA:LAX,FAA:OAK,FAA:SFO}<br>
-</code>
+</code></div>
 
-<h2>Using Predicates</h2>
+<h2>Filters</h2>
 
 <p> 
-  Another way to select certain airports from groups is to use the "such that"
-  operator '|' with a predicate.
+  Another way to select certain airports from groups is to use the filter
+  operator '|' with a condition.
 </p>
 
 
 <p>Input:</p>
 
 
+<div class="code1">
 <code>
 g1 = {FAA:SFO, FAA:JFK};<br>
 g2 = g1 | isInState(CA);<br>
 
 print(g2);<br>
-</code>
+</code></div>
   
 <p>Output:</p>
+<div class="code1">
 <code>
   g2 = {FAA:SFO}<br>
-</code>
+</code></div>
 
 <p>
-  There are 7 predicates (shown with example arguments):
+  There are 7 filters (shown with example arguments):
   <code>
   <ul>
     <li> isInCountry(USA) </li>
@@ -184,12 +213,89 @@ print(g2);<br>
   </code>
 </p>
 
+
 <p>
-  You can imagine that defining groups of airports, such as all of the
-  airports in California, by listing all of them
-  would be very tedious and error prone.  Luckily 
+  The input arguments for these filters are:
+  <ul>
+    <li> isInCountry: 3 letter country code</li>
+    <li> isInState: 2 letter U.S. state code</li>
+    <li> isNearAirport: an airport and the distance from that airport in miles </li>
+    <li> isNorthOf: a lattitude in degrees </li>
+    <li> isSouthOf: a lattitude in degrees </li>
+    <li> isEastOf: a longitude in degrees between -180 and 180 </li>
+    <li> isWestOf:  a longitude in degrees between -180 and 180</li>
+  </ul>
 </p>
 
+
+<p>
+  The filters can be combined with the logical operators:
+  <ul>
+    <li>'&&' for and</li>
+    <li>'||' for or</li>
+    <li>'!' for not</li>
+  </ul>
+</p>
+
+<p>
+  There's one predefined group, called allAirports, from which that you can
+  define your own groups.
+  For example, the following creates three groups,
+  one with the airports in the US,
+  one with the airports in Califorina,
+  and one with the airports
+  within a 40 mile radius of SFO and north of San Franciso.
+</p>
+
+<p>Input:</p>
+<div class="code1">
+<code>
+usa = allAirports | isInCountry(USA);<br>
+ca = usa | isInState(CA);<br>
+northOfSF = ca | (isNorthOf(37.77) && isNearAirport(FAA:SFO, 40));<br>
+print(northOfSF);
+</code></div>
+
+<p>Output:</p>
+<div class="code1">
+<code>
+  northOfSF = {FAA:CCR,FAA:DVO,FAA:7CL1,FAA:81CL,FAA:CA63,FAA:CL85,<br>
+  FAA:CN06,FAA:CA26,FAA:CA27,FAA:59CA,FAA:CN02,FAA:CA35,FAA:5CA3,<br>FAA:17CA,FAA:JMC,FAA:22CA,FAA:60CA}
+</code></div>
+
+<p>
+  Filters can be given names and grouped with parentheses.  For example,
+  the following defines a group of airports in a 1 degree by 1 degree square
+  around Chicago, which has longitude and lattitude of (41.88, -87.63).
+</p>
+
+<p>Input:</p>
+<div class="code1">
+<code>
+usa = allAirports | isInCountry(USA);<br>
+il = usa | isInState(IL);<br>
+betweenNS = isNorthOf(41.38) && isSouthOf(42.38);<br>
+betweenEW =  isEastOf(-88.38) && isWestOf(-87.38);<br>
+inBox = il | (betweenNS && betweenEW);<br>
+print(inBox);<br>
+</code></div>
+
+<p>Output</p>
+<div class="code1">
+<code>
+  inBox = {FAA:DPA,FAA:MDW,FAA:ORD,FAA:PWK,FAA:IGQ,FAA:LOT, ... }
+</code></div>
+
+
+<h2>Summary</h2>
+
+With this airport groups web app, you can create groups of airports by
+listing them, combining them with the '+', '^' and '-' operators,
+and filtering them the '|' operator.  There 7 are filters that you can combine
+with the '&&', '||' and '!' operators.  The predefined group, allAirports,
+contains many of the world's airports.
+
+For more examples see to the Examples page.
 
 </body>
 </html>

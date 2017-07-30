@@ -24,6 +24,7 @@ library
                      , aeson
                      , containers
                      , parsec
+                  --   , parsec3-number
                      , servant
                      , servant-server
                      , text
