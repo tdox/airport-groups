@@ -8,12 +8,16 @@
       margin: 20px;
       }
 
-      div.code1 {
-      background-color:#eff1da;
+      div.input {
+      background-color:#e1ede2;
       margin: 20px;
       width: 600px;
       }
 
+      div.output {
+      background-color:#ddd8c4;
+      margin: 20px;
+      width: 600px;
     </style>
 
     
@@ -27,6 +31,13 @@
   creating groups of airports.
   Here's a screen shot of the app.
 </p>
+
+
+<img src="screenshot1.png" alt="Airport Groups"
+     style="width:700px" >
+
+
+
 
 <p>
   You use the upper portion of the page to define your groups. To make sure
@@ -42,7 +53,7 @@
 </p>
 
 
-<div class="code1">
+<div class="input">
 <code>
   g1 = {FAA:SFO};<br>
   print(g1);
@@ -55,7 +66,7 @@
   you'll see this displayed.
 </p>
 
-<div class="code1">
+<div class="output">
 <code>
   g1 = {FAA:SFO}
 </code></div>
@@ -70,7 +81,7 @@
   Here's a slightly more complicated example:
 </p>
 
-<div class="code1">
+<div class="input">
 <code>
   g1 = {FAA:SFO, FAA:OAK};<br>
   g2 = {ICAO:KJFK};<br>
@@ -81,7 +92,7 @@
 
 <p>And its output:</p>
 
-<div class="code1">
+<div class="output">
 <code>
   g3 = {FAA:JFK,FAA:OAK,FAA:SFO}
 </code></div>
@@ -126,7 +137,7 @@ as shown in the following example.
 
 <p>Input:</p>
 
-<div class="code1">
+<div class="input">
 <code>
   g1 = {FAA:SFO, FAA:OAK, FAA:LAX};<br>
   g2 = {FAA:SFO, FAA:JFK};<br>
@@ -140,7 +151,7 @@ as shown in the following example.
 </code></div>
 
 <p>Output:</p>
-<div class="code1">
+<div class="output">
 <code>
   union = {FAA:JFK,FAA:LAX,FAA:OAK,FAA:SFO}<br>
   intersection = {FAA:SFO}<br>
@@ -153,7 +164,7 @@ You can control the order of operations by using parenthesis.
 
 <p>Input:</p>
 
-<div class="code1">
+<div class="input">
 <code>
 g1 = {FAA:SFO, FAA:OAK, FAA:LAX};<br>
 g2 = {FAA:SFO, FAA:JFK};<br>
@@ -167,7 +178,7 @@ print(g4);<br>
 </code></div>
 
 <p>Output:</p>
-<div class="code1">
+<div class="output">
 <code>
 g3 = {FAA:JFK,FAA:OAK,FAA:SFO}<br>
 g4 = {FAA:JFK,FAA:LAX,FAA:OAK,FAA:SFO}<br>
@@ -184,7 +195,7 @@ g4 = {FAA:JFK,FAA:LAX,FAA:OAK,FAA:SFO}<br>
 <p>Input:</p>
 
 
-<div class="code1">
+<div class="input">
 <code>
 g1 = {FAA:SFO, FAA:JFK};<br>
 g2 = g1 | isInState(CA);<br>
@@ -193,7 +204,7 @@ print(g2);<br>
 </code></div>
   
 <p>Output:</p>
-<div class="code1">
+<div class="output">
 <code>
   g2 = {FAA:SFO}<br>
 </code></div>
@@ -248,7 +259,7 @@ print(g2);<br>
 </p>
 
 <p>Input:</p>
-<div class="code1">
+<div class="input">
 <code>
 usa = allAirports | isInCountry(USA);<br>
 ca = usa | isInState(CA);<br>
@@ -257,7 +268,7 @@ print(northOfSF);
 </code></div>
 
 <p>Output:</p>
-<div class="code1">
+<div class="output">
 <code>
   northOfSF = {FAA:CCR,FAA:DVO,FAA:7CL1,FAA:81CL,FAA:CA63,FAA:CL85,<br>
   FAA:CN06,FAA:CA26,FAA:CA27,FAA:59CA,FAA:CN02,FAA:CA35,FAA:5CA3,<br>FAA:17CA,FAA:JMC,FAA:22CA,FAA:60CA}
@@ -270,7 +281,7 @@ print(northOfSF);
 </p>
 
 <p>Input:</p>
-<div class="code1">
+<div class="input">
 <code>
 usa = allAirports | isInCountry(USA);<br>
 il = usa | isInState(IL);<br>
@@ -281,7 +292,7 @@ print(inBox);<br>
 </code></div>
 
 <p>Output</p>
-<div class="code1">
+<div class="output">
 <code>
   inBox = {FAA:DPA,FAA:MDW,FAA:ORD,FAA:PWK,FAA:IGQ,FAA:LOT, ... }
 </code></div>
@@ -295,7 +306,7 @@ and filtering them the '|' operator.  There 7 are filters that you can combine
 with the '&&', '||' and '!' operators.  The predefined group, allAirports,
 contains many of the world's airports.
 
-For more examples see to the Examples page.
+For more examples see the <a href="examples.html">Examples</a> page.
 
 </body>
 </html>

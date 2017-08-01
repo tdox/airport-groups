@@ -64,6 +64,9 @@ EXECUTABLE=$( find $SEARCH_DIR  -name airport-group-service-exe | grep install)
 cp $EXECUTABLE $BIN_DIR
 cp $BACKEND_DIR/airport-groups/assets/airports.txt $ASSETS_DIR
 cp $SRC_DIR/frontend/web-elm/index.html $ASSETS_DIR
+cp $SRC_DIR/frontend/static-html/help.html $ASSETS_DIR
+cp $SRC_DIR/frontend/static-html/examples.html $ASSETS_DIR
+cp $SRC_DIR/frontend/static-html/screenshot1.png $ASSETS_DIR
 
 cd $TARGET_DIR
 tar -cvzf airport-groups-webapp_$(date '+%Y.%m.%d-%H.%M.%S').tgz airport-groups-webapp

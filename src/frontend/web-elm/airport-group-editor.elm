@@ -1,8 +1,8 @@
-import Html exposing (Html, Attribute, br, button, div, h1, input, p
+import Html exposing (Html, Attribute, a, br, button, div, h1, input, p
                      , text, textarea)
 
 import Html.Events exposing (onClick, onInput)
-import Html.Attributes exposing (disabled, placeholder, style)
+import Html.Attributes exposing (disabled, href, placeholder, style)
 import Http exposing (Body, jsonBody)
 import Json.Decode exposing (Decoder, decodeString, field, list, map, string)
 import Json.Encode exposing (Value, object, string)
@@ -75,6 +75,8 @@ view model =
     , button [ style [fontSize], onClick Run ] [ text "Run" ]
     , p [] []
     , textarea [outStyle, disabled True] [ text model.output]
+    , p [] []
+    , a [href "airport-groups/help.html"] [text "Help"]
     ]
 
 
