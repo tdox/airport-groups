@@ -106,8 +106,8 @@ progOutputDecoder =
 runProgram : String -> Cmd Msg
 runProgram src =
     let
-        url = "http://localhost:80/airport-group"
-        -- url = "http://beta.planit9.com/airport-group"
+        -- url = "http://localhost:80/airport-group"
+        url = "http://beta.planit9.com/airport-group"
         req = Http.post url (mkBody src) progOutputDecoder
     in
         Http.send NewOutput req
