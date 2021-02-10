@@ -8,11 +8,9 @@
 module Service where
 
 import Airport
---import Groups
 import Parser
 
 -- base
--- import Data.Proxy (Proxy(Proxy))
 import GHC.Generics (Generic)
 
 -- aeson
@@ -21,10 +19,10 @@ import Data.Aeson (FromJSON, ToJSON)
 import Servant
 
 -- servant
-import Servant.API ((:>), (:<|>), JSON, Post, Raw, ReqBody)
+--import Servant.API ((:>), (:<|>), JSON, Post, Raw, ReqBody)
        
 -- servant-server
-import Servant.Server (Handler, Server, serve)
+--import Servant.Server (Handler, Server, serve)
 
 
 -- text
