@@ -4,3 +4,5 @@ target
 .stack-work
 *.hi
 *~
+stack.yaml.lock
+main.js

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Airport Groups</title>
+    <script src="main.js"></script>
+		<link rel="stylesheet" href="styles.css"		
+  </head>
+	
+  <body>
+    <div id="myapp"></div>
+
+    <script>
+			
+			const cfg =
+			  {scheme: "http",
+			   host: "localhost",
+			   prt: "8080"
+			  };
+
+
+			var app = Elm.Main.init({
+        node: document.getElementById('myapp'),
+        flags: cfg
+      });
+			
+			
+		</script>
+  </body>
+</html>

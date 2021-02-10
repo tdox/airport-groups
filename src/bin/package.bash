@@ -1,5 +1,15 @@
 #!/bin/bash
 
+echo packaging
+
+use_heroku=false
+
+if [ "$1" == "-h" ]; then
+    echo "packaging for heroku"
+    use_heroku=true
+fi
+
+
 ROOT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd ../.. && pwd )
 
 echo $ROOT_DIR
@@ -63,12 +73,24 @@ EXECUTABLE=$( find $SEARCH_DIR  -name airport-group-service-exe | grep install)
 #echo EXECUTABLE: $EXECUTABLE
 cp $EXECUTABLE $BIN_DIR
 cp $BACKEND_DIR/airport-groups/assets/airports.txt $ASSETS_DIR
-cp $SRC_DIR/frontend/web-elm/index.html $ASSETS_DIR
+# cp $SRC_DIR/frontend/web-elm/index.html $ASSETS_DIR
+cp $SRC_DIR/frontend/target/main.js $ASSETS_DIR
+
 cp $SRC_DIR/frontend/static-html/help.html $ASSETS_DIR
 cp $SRC_DIR/frontend/static-html/examples.html $ASSETS_DIR
 cp $SRC_DIR/frontend/static-html/screenshot1.png $ASSETS_DIR
 
-cd $TARGET_DIR
-tar -cvzf airport-groups-webapp_$(date '+%Y.%m.%d-%H.%M.%S').tgz airport-groups-webapp
+
+if [ "$use_heroku" = true ]; then
+    cp $SRC_DIR/frontend/static-html/index_heroku.html $ASSETS_DIR/index.html
+else
+    cp $SRC_DIR/frontend/static-html/index_localhost.html $ASSETS_DIR/index.html
+fi
+
+cp $SRC_DIR/frontend/static-html/styles.css $ASSETS_DIR
+
+
+#cd $TARGET_DIR
+#tar -cvzf airport-groups-webapp_$(date '+%Y.%m.%d-%H.%M.%S').tgz airport-groups-webapp
 
 # echo done

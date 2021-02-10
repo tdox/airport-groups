@@ -12,9 +12,14 @@ import Parser
 
 -- base
 import GHC.Generics (Generic)
+import System.Environment (lookupEnv)
 
 -- aeson
 import Data.Aeson (FromJSON, ToJSON)
+
+-- directory
+import System.Directory (getCurrentDirectory)
+
 
 import Servant
 
@@ -88,16 +93,25 @@ app aps = serve airportGroupAPI $ server aps
 
 service :: IO ()
 service = do
+  currDir <- getCurrentDirectory
+  putStrLn $ "pwd: " <> currDir
+  
+  mPort <- lookupEnv "PORT"
   let
-    port = 80
-    airportsFp = "../assets/airports.txt"
+    port = maybe 8080 read mPort
+
+--  let
+--    port = 80
+    airportsFp = "./assets/airports.txt"
 
   putStr "loading airports..."
   aps <- loadAirports airportsFp
   putStrLn " done"
 
   -- putStrLn $ "airport-group-service running on " ++ show port
-  putStrLn $ "browse to http://localhost:" ++ show port ++ "/airport-groups"
+--  putStrLn $ "browse to http://localhost:" ++ show port ++ "/airport-groups"
+  putStrLn $ "serving at http://localhost:" ++ show port
+  putStrLn "browse to target/pricing-webapp/assets/index.html"
 
   run port $ cors (const $ Just policy) $ app aps
     where

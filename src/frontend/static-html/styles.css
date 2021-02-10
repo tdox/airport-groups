@@ -1,0 +1,44 @@
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 5px;
+}
+
+
+
+textarea { max-width: 100%; }
+
+button { margin: 4px; }
+
+.grid-container  {
+	display: grid;
+	grid-template-columns:  repeat(12, 1fr);
+	grid-column-gap: 16px;
+	grid-row-gap: 16px;
+}
+
+.legs {
+	grid-column: 1/-1;
+}
+.price-program {
+	grid-column: span 6;
+}
+.price{
+	grid-column: span 6;
+}
+.aircraft {
+	grid-column: span 4;
+}
+
+.leg { 
+#	display: flex; 
+	align-items:center; 
+	margin-bottom:8px; 
+}
+.leg > * { 
+#	flex: 1; 
+	margin-right:8px; 
+}

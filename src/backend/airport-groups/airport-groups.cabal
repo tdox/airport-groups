@@ -1,60 +1,94 @@
-name:                airport-groups
-version:             0.1.0.0
--- synopsis:
--- description:
-homepage:            https://github.com/githubuser/airport-groups#readme
-license:             BSD3
-license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2017 Tad Doxsee
-category:            Web
-build-type:          Simple
-extra-source-files:  README.md
-cabal-version:       >=1.10
+cabal-version: 1.12
 
-library
-  hs-source-dirs:      src
-  exposed-modules:     Airport
-                     , Groups
-                     , Parser
-                     , Service
-                       
-  build-depends:       base >= 4.7 && < 5
-                     , aeson
-                     , containers
-                     , parsec
-                  --   , parsec3-number
-                     , servant
-                     , servant-server
-                     , text
-                     , transformers
-                     , wai
-                     , wai-cors
-                     , warp
-                       
-  default-language:    Haskell2010
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: c02718e5edc8bff04cc37d9802c78535db8a9f6c3f74ab8259fd43f3c45e480f
 
-executable airport-group-service-exe
-  hs-source-dirs:      app
-  main-is:             airport-group-service.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -O2
-  build-depends:       base
-                     , airport-groups
-  default-language:    Haskell2010
-
-test-suite airport-groups-test
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  main-is:             Spec.hs
-  build-depends:       base
-                     , airport-groups
-                     , containers
-                     , parsec
-                     , text
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N -O2
-  default-language:    Haskell2010
+name:           airport-groups
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/pricing-prototype-v2#readme>
+homepage:       https://github.com/#readme
+bug-reports:    https://github.com//issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2020 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
 
 source-repository head
-  type:     git
-  location: https://github.com/tdox/airport-groups
+  type: git
+  location: https://github.com/
+
+library
+  exposed-modules:
+      Airport
+      Groups
+      Parser
+      Service
+  other-modules:
+      Paths_airport_groups
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -O0
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , containers
+    , directory
+    , parsec
+    , servant-server
+    , text
+    , wai
+    , wai-cors
+    , warp
+  default-language: Haskell2010
+
+executable airport-groups
+  main-is: Main.hs
+  other-modules:
+      Paths_airport_groups
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -O0 -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , airport-groups
+    , base >=4.7 && <5
+    , containers
+    , directory
+    , parsec
+    , servant-server
+    , text
+    , wai
+    , wai-cors
+    , warp
+  default-language: Haskell2010
+
+test-suite airport-groups-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      TestGroup
+      TestParser
+      Paths_airport_groups
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -O0 -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , airport-groups
+    , base >=4.7 && <5
+    , containers
+    , directory
+    , parsec
+    , servant-server
+    , text
+    , wai
+    , wai-cors
+    , warp
+  default-language: Haskell2010
