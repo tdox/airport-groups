@@ -1,0 +1,31 @@
+Steps to manually run both BE and FE
+
+# in first shell
+$ cd src/bin
+$ ./buid.bash
+
+# in second shell
+$ cd src/backend
+$ stack run pricing-service
+
+# in third shell
+$ cd src/frontend
+$ elm make src/Main.elm --output=static-html/main.js
+$ open static-html/index_localhost.html 
+
+
+----------------------------------
+Steps to redeploy on Heroku
+
+- log in to Ubuntu
+$ cd git/pricing-service-v2
+$ git pull
+$ ./src/bin/clean.bash -d
+$ ./src/bin/build.bash
+$ ./src/bin/package.bash -h
+$ heroku container:push web -a=pricing-webapp
+$ heroku container:release web -a=pricing-webapp
+$ heroku ps:scale web=1 -a=pricing-webapp
+$ heroku apps:info pricing-webapp
+
+NOTE: to see the new version, may need to clear browser cache!
