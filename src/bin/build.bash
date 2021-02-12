@@ -9,7 +9,7 @@ SRC_DIR=$ROOT_DIR/src
 
 
 echo building the backend
-cd $SRC_DIR/backend/airport-groups
+cd $SRC_DIR/backend
 stack setup
 stack build
 pwd

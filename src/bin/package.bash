@@ -67,12 +67,12 @@ fi
 #mkdir -p $DEPLOY_DIR/assets
 
 BACKEND_DIR=$SRC_DIR/backend
-SEARCH_DIR=$BACKEND_DIR/airport-groups/.stack-work/install
+SEARCH_DIR=$BACKEND_DIR/.stack-work/install
 
-EXECUTABLE=$( find $SEARCH_DIR  -name airport-group-service-exe | grep install)
-#echo EXECUTABLE: $EXECUTABLE
+EXECUTABLE=$( find $SEARCH_DIR  -name airport-groups-service | grep install)
+# echo EXECUTABLE: $EXECUTABLE
 cp $EXECUTABLE $BIN_DIR
-cp $BACKEND_DIR/airport-groups/assets/airports.txt $ASSETS_DIR
+cp $BACKEND_DIR/assets/airports.txt $ASSETS_DIR
 # cp $SRC_DIR/frontend/web-elm/index.html $ASSETS_DIR
 cp $SRC_DIR/frontend/target/main.js $ASSETS_DIR
 

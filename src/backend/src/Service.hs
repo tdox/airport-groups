@@ -56,7 +56,7 @@ instance ToJSON ProgOutput
 
 type AirportGroupAPI =
   "airport-group" :> ReqBody '[JSON] SourceCode :> Post '[JSON] ProgOutput
-   :<|> "airport-groups" :> Raw
+   :<|> Raw -- "airport-groups" :> Raw
 
 --------------------------------------------------------------------------------
 -- handlers
@@ -79,7 +79,11 @@ server :: AirportMaps -> Server AirportGroupAPI
 server aps = serveInterpreter :<|> serveHtml
   where
     serveInterpreter = compileRun aps -- undefined :: 
-    serveHtml = serveDirectory "../assets"
+
+    serveHtml = serveDirectoryFileServer "./assets"
+  -- this path is relative to the current working directory
+  -- so make sure the current working directory is set correctly,
+  -- for example in the Dockerfile
 
 airportGroupAPI :: Proxy AirportGroupAPI
 airportGroupAPI = Proxy
@@ -111,7 +115,7 @@ service = do
   -- putStrLn $ "airport-group-service running on " ++ show port
 --  putStrLn $ "browse to http://localhost:" ++ show port ++ "/airport-groups"
   putStrLn $ "serving at http://localhost:" ++ show port
-  putStrLn "browse to target/pricing-webapp/assets/index.html"
+  putStrLn "browse to target/airport-groups-webapp/assets/index.html"
 
   run port $ cors (const $ Just policy) $ app aps
     where

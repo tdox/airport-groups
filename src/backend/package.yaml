@@ -56,7 +56,7 @@ library:
   source-dirs: src
 
 executables:
-  airport-groups:
+  airport-groups-service:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

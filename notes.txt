@@ -6,7 +6,7 @@ $ ./buid.bash
 
 # in second shell
 $ cd src/backend
-$ stack run airport-groups
+$ stack run airport-groups-service
 
 # in third shell
 $ cd src/frontend
@@ -23,9 +23,33 @@ $ git pull
 $ ./src/bin/clean.bash -d
 $ ./src/bin/build.bash
 $ ./src/bin/package.bash -h
-$ heroku container:push web -a=pricing-webapp
-$ heroku container:release web -a=pricing-webapp
-$ heroku ps:scale web=1 -a=pricing-webapp
-$ heroku apps:info pricing-webapp
+# also needed $ heroku container:login
+$ heroku container:push web -a=airport-groups-webapp
+$ heroku container:release web -a=airport-groups-webapp
+$ heroku ps:scale web=1 -a=airport-groups-webapp
+$ heroku apps:info airport-groups-webapp
 
 NOTE: to see the new version, may need to clear browser cache!
+
+
+-------------
+
+2/11/21
+
+Setup heroku for airport-groups
+
+$ heroku autocomplete
+$ heroku login
+$ heroku apps:create airport-groups-webapp
+$ heroku apps:info airport-groups-webapp  # (https://airport-groups-webapp.herokuapp.com/)
+
+
+$ heroku container:login
+$ heroku container:push web -a=airport-groups-webapp
+Got error when push
+
+$ docker run -it airport-groups-webapp # run the container interatively 
+
+
+need to fix path.  It's now
+https://airport-groups-webapp.herokuapp.com/airport-groups/index.html
