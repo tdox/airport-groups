@@ -6,7 +6,7 @@ $ ./buid.bash
 
 # in second shell
 $ cd src/backend
-$ stack run pricing-service
+$ stack run airport-groups
 
 # in third shell
 $ cd src/frontend
